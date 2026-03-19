@@ -529,9 +529,7 @@
 
 <!-- ─── Note ─── -->
 <div class="abi-note">
-  ⚠️ Pastikan kamu verifikasi ABI contract dari
-  <a href="https://sepolia.etherscan.io/address/0x05bD7a3D18324c1F7e216f7fBF2b15985aE5281A#code" target="_blank">Etherscan</a>
-  sebelum dipakai di mainnet. App ini untuk <strong>testnet only</strong>.
+  ✅ ABI diverifikasi dari <a href="https://sepolia.etherscan.io/address/0xa594c32593eD1E0Fce83fa1b3A56870b4a1b4ec1#code" target="_blank">Etherscan</a> · fungsi: <code>sendFunds()</code> · App ini untuk <strong>testnet only</strong>.
 </div>
 
 <!-- ─── Toast ─── -->
@@ -614,16 +612,36 @@ const PUSH_TOKENS = {
 }
 
 // ─── ABIs ───
-// ABI UniversalGateway (diperkirakan dari pola bridge standar)
-// ⚠️ Verifikasi ABI dari: https://sepolia.etherscan.io/address/0xa594c32593eD1E0Fce83fa1b3A56870b4a1b4ec1#code
+// ABI UniversalGateway - diambil langsung dari source code contract
+// Source: https://sepolia.etherscan.io/address/0xa594c32593eD1E0Fce83fa1b3A56870b4a1b4ec1#code
+//
+// Fungsi utama untuk bridge: sendFunds
+// struct RevertInstructions { address fundRecipient; ... }
+// - Untuk native (ETH/BNB): panggil dengan msg.value = bridgeAmount, bridgeToken = address(0)
+// - Untuk ERC20: panggil tanpa msg.value, bridgeToken = alamat token
 const GATEWAY_ABI = [
-  // Untuk native token (ETH, BNB)
-  'function depositNative(address recipient) external payable',
-  // Untuk ERC20 token
-  'function depositToken(address token, uint256 amount, address recipient) external',
+  // sendFunds: fungsi utama untuk bridge dana ke Push Chain
+  `function sendFunds(
+    address recipient,
+    address bridgeToken,
+    uint256 bridgeAmount,
+    tuple(address fundRecipient) revertInstruction
+  ) external payable`,
+
+  // isSupportedToken: cek apakah token didukung
+  'function isSupportedToken(address token) external view returns (bool)',
+
   // Events
-  'event TokenDeposited(address indexed token, address indexed from, address indexed recipient, uint256 amount)',
-  'event NativeDeposited(address indexed from, address indexed recipient, uint256 amount)',
+  `event UniversalTx(
+    address indexed sender,
+    address indexed recipient,
+    address indexed token,
+    uint256 amount,
+    bytes payload,
+    tuple(address fundRecipient) revertInstruction,
+    uint8 txType,
+    bytes signatureData
+  )`,
 ]
 
 const ERC20_ABI = [
@@ -901,17 +919,43 @@ async function doBridge() {
       setStep(2, 'done', '✓ Native token, tidak perlu approve')
     }
 
+    // ── Step 3: Cek token support (ERC20) ──
+    if (token.address) {
+      setStep(3, 'active', 'Cek apakah token didukung gateway...')
+      const gateway = new ethers.Contract(chain.gateway, GATEWAY_ABI, provider)
+      const supported = await gateway.isSupportedToken(token.address)
+      if (!supported) {
+        throw new Error(`Token ${token.name} belum di-whitelist di gateway ini. Coba pakai token lain.`)
+      }
+    }
+
     // ── Step 3: Kirim ke Gateway ──
     setStep(3, 'active', 'Menunggu konfirmasi di MetaMask...')
     const gateway = new ethers.Contract(chain.gateway, GATEWAY_ABI, signer)
 
+    // RevertInstructions struct: jika tx gagal di Push Chain,
+    // dana dikembalikan ke fundRecipient (kita set ke userAddress sendiri)
+    const revertInstruction = { fundRecipient: userAddress }
+
     let tx
     if (!token.address) {
-      // Native ETH/BNB
-      tx = await gateway.depositNative(userAddress, { value: amount })
+      // Native ETH/BNB → bridgeToken = address(0), msg.value = amount
+      tx = await gateway.sendFunds(
+        userAddress,           // recipient di Push Chain
+        ethers.ZeroAddress,   // bridgeToken = 0x0 untuk native
+        amount,                // bridgeAmount
+        revertInstruction,     // RevertInstructions struct
+        { value: amount }      // msg.value harus = bridgeAmount untuk native
+      )
     } else {
-      // ERC20
-      tx = await gateway.depositToken(token.address, amount, userAddress)
+      // ERC20 → tidak perlu kirim ETH (msg.value = 0)
+      tx = await gateway.sendFunds(
+        userAddress,           // recipient di Push Chain
+        token.address,         // bridgeToken = alamat ERC20
+        amount,                // bridgeAmount
+        revertInstruction,     // RevertInstructions struct
+        { value: 0n }          // msg.value = 0 untuk ERC20
+      )
     }
 
     setStep(3, 'active', `Tx terkirim: ${shortAddr(tx.hash)}`)
