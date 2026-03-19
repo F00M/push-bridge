@@ -473,7 +473,8 @@
   </div>
 
   <div class="info-box">
-    ⏱ <strong>Bridge time:</strong> ~2–5 menit. Token akan muncul sebagai <strong>pETH/USDC.eth/dll</strong> di Push Chain setelah konfirmasi.
+    ⏱ <strong>Bridge time:</strong> ~2–5 menit. Token akan muncul sebagai <strong>pETH/USDC.eth/dll</strong> di Push Chain setelah konfirmasi.<br/>
+    ⚠️ <strong>Min ETH:</strong> 0.001 ETH per bridge. Pastikan wallet kamu punya saldo testnet (ambil dari <a href="https://faucet.push.org" target="_blank" style="color:var(--accent)">faucet</a>).
   </div>
 
   <!-- Bridge Button -->
@@ -595,11 +596,10 @@ const CHAINS = {
 }
 
 // Push Chain config
+// RPC resmi dari: https://push.org/docs/chain/setup/chain-config
 const PUSH_CHAIN = {
   chainId: 42101,
-  // ⚠️ Ganti dengan RPC resmi Push Chain jika berbeda
-  // Cek di: https://push.org/docs/chain/setup/chain-config
-  rpc: 'https://rpc.donut.push.network',
+  rpc: 'https://evm.donut.rpc.push.org/',
   explorer: 'https://donut.push.network',
 }
 
@@ -922,10 +922,10 @@ async function doBridge() {
     // ── Step 3: Cek token support (ERC20) ──
     if (token.address) {
       setStep(3, 'active', 'Cek apakah token didukung gateway...')
-      const gateway = new ethers.Contract(chain.gateway, GATEWAY_ABI, provider)
-      const supported = await gateway.isSupportedToken(token.address)
+      const gatewayRead = new ethers.Contract(chain.gateway, GATEWAY_ABI, provider)
+      const supported = await gatewayRead.isSupportedToken(token.address)
       if (!supported) {
-        throw new Error(`Token ${token.name} belum di-whitelist di gateway ini. Coba pakai token lain.`)
+        throw new Error(`Token ${token.name} belum di-whitelist di gateway ini. Coba pakai ETH Native atau USDC.`)
       }
     }
 
@@ -939,13 +939,19 @@ async function doBridge() {
 
     let tx
     if (!token.address) {
-      // Native ETH/BNB → bridgeToken = address(0), msg.value = amount
+      // Native ETH/BNB
+      // ⚠️ PENTING: msg.value HARUS PERSIS SAMA dengan bridgeAmount
+      // Contract akan revert jika msg.value != bridgeAmount
+      // Min jumlah ~0.001 ETH (tergantung USD cap contract)
+      if (amount < ethers.parseEther('0.001')) {
+        throw new Error('Jumlah minimum untuk native ETH adalah 0.001 ETH. Coba jumlah yang lebih besar.')
+      }
       tx = await gateway.sendFunds(
         userAddress,           // recipient di Push Chain
-        ethers.ZeroAddress,   // bridgeToken = 0x0 untuk native
+        ethers.ZeroAddress,    // bridgeToken = 0x0 untuk native
         amount,                // bridgeAmount
         revertInstruction,     // RevertInstructions struct
-        { value: amount }      // msg.value harus = bridgeAmount untuk native
+        { value: amount }      // msg.value HARUS = bridgeAmount
       )
     } else {
       // ERC20 → tidak perlu kirim ETH (msg.value = 0)
@@ -954,7 +960,6 @@ async function doBridge() {
         token.address,         // bridgeToken = alamat ERC20
         amount,                // bridgeAmount
         revertInstruction,     // RevertInstructions struct
-        { value: 0n }          // msg.value = 0 untuk ERC20
       )
     }
 
