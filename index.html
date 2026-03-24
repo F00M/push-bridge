@@ -4,333 +4,90 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Push Chain Bridge</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
   <style>
     :root {
-      --bg:        #0c0e12;
-      --surface:   #141720;
-      --surface2:  #1c2030;
-      --border:    #252a3a;
-      --accent:    #00e5c3;
-      --accent2:   #0099ff;
-      --warn:      #ff6b35;
-      --success:   #00e587;
-      --error:     #ff4466;
-      --text:      #e8ecf4;
-      --muted:     #6b748a;
-      --glow:      rgba(0,229,195,0.15);
+      --bg: #0c0e12; --surface: #141720; --surface2: #1c2030;
+      --border: #252a3a; --accent: #00e5c3; --accent2: #0099ff;
+      --success: #00e587; --error: #ff4466; --warn: #ff6b35;
+      --text: #e8ecf4; --muted: #6b748a;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Syne', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px 60px;
-    }
-
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none; z-index: 0; opacity: 0.4;
-    }
-
-    header {
-      width: 100%; max-width: 480px;
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 32px; padding: 0 4px;
-    }
-
+    body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px 16px 60px; }
+    header { width: 100%; max-width: 480px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
     .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 12px var(--accent);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%,100% { opacity:1; transform:scale(1); }
-      50% { opacity:0.5; transform:scale(0.8); }
-    }
-    .logo h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)} }
+    .logo h1 { font-size: 18px; font-weight: 800; }
     .logo span { color: var(--accent); }
-
-    #connectBtn {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: 'Syne', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 8px 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex; align-items: center; gap: 8px;
-    }
+    #connectBtn { background: transparent; border: 1px solid var(--border); color: var(--text); font-family: 'Syne',sans-serif; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 10px; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 8px; }
     #connectBtn:hover { border-color: var(--accent); color: var(--accent); }
     #connectBtn.connected { border-color: var(--success); color: var(--success); }
-    .dot-connected {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--success);
-    }
-
-    .card {
-      width: 100%; max-width: 480px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 24px;
-      position: relative;
-      z-index: 1;
-    }
+    .dot-connected { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+    .card { width: 100%; max-width: 480px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; position: relative; z-index: 1; }
     .card + .card { margin-top: 12px; }
-
-    .label {
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 12px;
-    }
-
+    .label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
     .chain-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .chain-btn {
-      flex: 1; min-width: 80px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 8px;
-      cursor: pointer;
-      text-align: center;
-      font-family: 'Syne', sans-serif;
-      font-size: 12px; font-weight: 600;
-      color: var(--muted);
-      transition: all 0.2s;
-    }
+    .chain-btn { flex: 1; min-width: 80px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 8px; cursor: pointer; text-align: center; font-family: 'Syne',sans-serif; font-size: 12px; font-weight: 600; color: var(--muted); transition: all .2s; }
     .chain-btn:hover { border-color: var(--accent); color: var(--text); }
-    .chain-btn.active {
-      border-color: var(--accent);
-      background: rgba(0,229,195,0.08);
-      color: var(--accent);
-    }
+    .chain-btn.active { border-color: var(--accent); background: rgba(0,229,195,.08); color: var(--accent); }
     .chain-btn .emoji { display: block; font-size: 18px; margin-bottom: 4px; }
-
-    .bridge-arrow {
-      display: flex; align-items: center; justify-content: center;
-      padding: 12px 0; color: var(--muted); font-size: 20px;
-    }
-
-    .token-amount-box {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      margin-top: 12px;
-    }
-
+    .token-amount-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 12px; }
     .token-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-
-    select {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: 'Syne', sans-serif;
-      font-size: 14px; font-weight: 600;
-      padding: 8px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      outline: none;
-      flex: 1;
-      appearance: none;
-    }
+    select { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'Syne',sans-serif; font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 10px; cursor: pointer; outline: none; flex: 1; appearance: none; }
     select:focus { border-color: var(--accent); }
-
-    .amount-input {
-      width: 100%;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-family: 'Space Mono', monospace;
-      font-size: 28px; font-weight: 700;
-      letter-spacing: -1px;
-    }
+    .amount-input { width: 100%; background: transparent; border: none; outline: none; color: var(--text); font-family: 'Space Mono',monospace; font-size: 28px; font-weight: 700; letter-spacing: -1px; }
     .amount-input::placeholder { color: var(--muted); }
-
-    .balance-row {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-top: 10px;
-    }
+    .balance-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
     .balance-info { font-size: 12px; color: var(--muted); }
-    .balance-val { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text); }
-    .max-btn {
-      background: rgba(0,229,195,0.1);
-      border: 1px solid rgba(0,229,195,0.3);
-      border-radius: 6px;
-      color: var(--accent);
-      font-family: 'Syne', sans-serif;
-      font-size: 10px; font-weight: 700;
-      padding: 3px 8px;
-      cursor: pointer;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      transition: all 0.2s;
-    }
-    .max-btn:hover { background: rgba(0,229,195,0.2); }
-
-    .push-balance-card {
-      background: linear-gradient(135deg, rgba(0,229,195,0.05), rgba(0,153,255,0.05));
-      border: 1px solid rgba(0,229,195,0.2);
-      border-radius: 14px;
-      padding: 16px;
-      margin-top: 12px;
-    }
-    .push-chain-label {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 1.5px;
-      color: var(--accent); margin-bottom: 12px;
-    }
-    .push-chain-label::before {
-      content: '';
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent);
-    }
+    .balance-val { font-family: 'Space Mono',monospace; font-size: 12px; color: var(--text); }
+    .max-btn { background: rgba(0,229,195,.1); border: 1px solid rgba(0,229,195,.3); border-radius: 6px; color: var(--accent); font-family: 'Syne',sans-serif; font-size: 10px; font-weight: 700; padding: 3px 8px; cursor: pointer; text-transform: uppercase; transition: all .2s; }
+    .max-btn:hover { background: rgba(0,229,195,.2); }
+    .push-balance-card { background: linear-gradient(135deg,rgba(0,229,195,.05),rgba(0,153,255,.05)); border: 1px solid rgba(0,229,195,.2); border-radius: 14px; padding: 16px; margin-top: 12px; }
+    .push-chain-label { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 12px; }
+    .push-chain-label::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); }
     .token-balances { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .token-balance-item {
-      background: rgba(255,255,255,0.03);
-      border-radius: 10px;
-      padding: 10px 12px;
-    }
+    .token-balance-item { background: rgba(255,255,255,.03); border-radius: 10px; padding: 10px 12px; }
     .tbi-name { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-    .tbi-val { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text); font-weight: 700; }
-
-    #bridgeBtn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none;
-      border-radius: 14px;
-      padding: 16px;
-      font-family: 'Syne', sans-serif;
-      font-size: 16px; font-weight: 800;
-      color: #000;
-      cursor: pointer;
-      margin-top: 16px;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
-    }
-    #bridgeBtn:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(0,229,195,0.25);
-    }
-    #bridgeBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
+    .tbi-val { font-family: 'Space Mono',monospace; font-size: 13px; color: var(--text); font-weight: 700; }
+    .bridge-arrow { display: flex; align-items: center; justify-content: center; padding: 12px 0; color: var(--muted); font-size: 20px; }
+    #bridgeBtn { width: 100%; background: linear-gradient(135deg,var(--accent),var(--accent2)); border: none; border-radius: 14px; padding: 16px; font-family: 'Syne',sans-serif; font-size: 16px; font-weight: 800; color: #000; cursor: pointer; margin-top: 16px; transition: all .2s; }
+    #bridgeBtn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,229,195,.25); }
+    #bridgeBtn:disabled { opacity: .4; cursor: not-allowed; }
     #progressCard { display: none; }
     .progress-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
-
-    .step {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-    }
+    .step { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
     .step:last-child { border-bottom: none; }
-
-    .step-icon {
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; flex-shrink: 0;
-      margin-top: 1px;
-    }
+    .step-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
     .step-icon.pending { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
-    .step-icon.active { background: rgba(0,229,195,0.15); border: 1px solid var(--accent); color: var(--accent); animation: spin 1s linear infinite; }
+    .step-icon.active { background: rgba(0,229,195,.15); border: 1px solid var(--accent); color: var(--accent); animation: spin 1s linear infinite; }
+    .step-icon.done { background: rgba(0,229,135,.15); border: 1px solid var(--success); color: var(--success); }
+    .step-icon.error { background: rgba(255,68,102,.15); border: 1px solid var(--error); color: var(--error); }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .step-icon.done { background: rgba(0,229,135,0.15); border: 1px solid var(--success); color: var(--success); animation: none; }
-    .step-icon.error { background: rgba(255,68,102,0.15); border: 1px solid var(--error); color: var(--error); }
-
-    .step-body { flex: 1; }
     .step-name { font-size: 13px; font-weight: 600; color: var(--text); }
-    .step-msg { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 2px; word-break: break-all; }
-
-    .tx-hash-box {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      margin-top: 12px;
-      display: none;
-    }
+    .step-msg { font-size: 11px; color: var(--muted); font-family: 'Space Mono',monospace; margin-top: 2px; word-break: break-all; }
+    .tx-hash-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 12px; display: none; }
     .tx-hash-box.visible { display: block; }
     .tx-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-    .tx-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); word-break: break-all; }
+    .tx-val { font-family: 'Space Mono',monospace; font-size: 11px; color: var(--accent); word-break: break-all; }
     .tx-links { display: flex; gap: 10px; margin-top: 8px; }
     .tx-link { font-size: 11px; color: var(--accent2); text-decoration: none; font-weight: 600; }
     .tx-link:hover { text-decoration: underline; }
-
-    .info-box {
-      background: rgba(0,153,255,0.07);
-      border: 1px solid rgba(0,153,255,0.2);
-      border-radius: 10px;
-      padding: 12px;
-      margin-top: 12px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
+    .info-box { background: rgba(0,153,255,.07); border: 1px solid rgba(0,153,255,.2); border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.6; }
     .info-box strong { color: var(--text); }
-
-    /* ─── WARNING BOX ─── */
-    .warn-box {
-      background: rgba(255,107,53,0.07);
-      border: 1px solid rgba(255,107,53,0.3);
-      border-radius: 10px;
-      padding: 12px;
-      margin-top: 12px;
-      font-size: 12px;
-      color: var(--warn);
-      line-height: 1.6;
-    }
-
-    #toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 20px;
-      font-size: 13px;
-      transition: transform 0.3s ease;
-      z-index: 999;
-      white-space: nowrap;
-    }
+    .warn-box { background: rgba(255,107,53,.07); border: 1px solid rgba(255,107,53,.35); border-radius: 10px; padding: 12px; margin-top: 10px; font-size: 12px; color: var(--warn); line-height: 1.6; display: none; }
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; font-size: 13px; transition: transform .3s; z-index: 999; white-space: nowrap; }
     #toast.show { transform: translateX(-50%) translateY(0); }
     #toast.success { border-color: var(--success); color: var(--success); }
     #toast.error { border-color: var(--error); color: var(--error); }
-
-    .abi-note {
-      max-width: 480px; width: 100%;
-      margin-top: 16px;
-      font-size: 11px; color: var(--muted);
-      text-align: center; line-height: 1.6; z-index: 1;
-    }
+    .abi-note { max-width: 480px; width: 100%; margin-top: 16px; font-size: 11px; color: var(--muted); text-align: center; line-height: 1.6; z-index: 1; }
     .abi-note a { color: var(--accent); text-decoration: none; }
-    .abi-note a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-
 <header>
-  <div class="logo">
-    <div class="logo-dot"></div>
-    <h1>Push <span>Bridge</span></h1>
-  </div>
+  <div class="logo"><div class="logo-dot"></div><h1>Push <span>Bridge</span></h1></div>
   <button id="connectBtn">Connect Wallet</button>
 </header>
 
@@ -360,14 +117,11 @@
     </div>
   </div>
 
-  <!-- Token support warning -->
-  <div class="warn-box" id="tokenWarnBox" style="display:none">
-    ⚠️ <strong id="tokenWarnMsg"></strong>
-  </div>
+  <div class="warn-box" id="warnBox"></div>
 
   <div class="push-balance-card">
     <div class="push-chain-label">Push Chain Balance (Donut Testnet)</div>
-    <div class="token-balances" id="pushBalances">
+    <div class="token-balances">
       <div class="token-balance-item"><div class="tbi-name">pETH</div><div class="tbi-val" id="bal-peth">—</div></div>
       <div class="token-balance-item"><div class="tbi-name">USDC.eth</div><div class="tbi-val" id="bal-usdc">—</div></div>
       <div class="token-balance-item"><div class="tbi-name">USDT.eth</div><div class="tbi-val" id="bal-usdt">—</div></div>
@@ -376,7 +130,6 @@
   </div>
 
   <div class="bridge-arrow">↓</div>
-
   <div class="label">Destination</div>
   <div class="token-amount-box" style="margin-top:0">
     <div style="display:flex;align-items:center;gap:10px">
@@ -392,8 +145,8 @@
   </div>
 
   <div class="info-box">
-    ⏱ <strong>Bridge time:</strong> ~2–5 menit. Token akan muncul sebagai <strong>pETH/USDC.eth/dll</strong> di Push Chain setelah konfirmasi.<br/>
-    ⚠️ <strong>Min ETH:</strong> 0.001 ETH per bridge. Pastikan wallet kamu punya saldo testnet (ambil dari <a href="https://faucet.push.org" target="_blank" style="color:var(--accent)">faucet</a>).
+    ⏱ <strong>Bridge time:</strong> ~2–5 menit. <br/>
+    ⚠️ <strong>Min ETH:</strong> 0.001 ETH. Testnet token dari <a href="https://faucet.push.org" target="_blank" style="color:var(--accent)">faucet</a>.
   </div>
 
   <button id="bridgeBtn" disabled>Connect Wallet First</button>
@@ -401,303 +154,275 @@
 
 <div class="card" id="progressCard">
   <div class="progress-title">🚀 Bridge Progress</div>
-
-  <div class="step" id="step-1">
-    <div class="step-icon pending" id="icon-1">1</div>
-    <div class="step-body">
-      <div class="step-name">Validasi Input</div>
-      <div class="step-msg" id="msg-1">Menunggu...</div>
-    </div>
-  </div>
-
-  <div class="step" id="step-2">
-    <div class="step-icon pending" id="icon-2">2</div>
-    <div class="step-body">
-      <div class="step-name">Cek Token Support</div>
-      <div class="step-msg" id="msg-2">Menunggu...</div>
-    </div>
-  </div>
-
-  <div class="step" id="step-3">
-    <div class="step-icon pending" id="icon-3">3</div>
-    <div class="step-body">
-      <div class="step-name">Approve Token (ERC20)</div>
-      <div class="step-msg" id="msg-3">Menunggu...</div>
-    </div>
-  </div>
-
-  <div class="step" id="step-4">
-    <div class="step-icon pending" id="icon-4">4</div>
-    <div class="step-body">
-      <div class="step-name">Kirim ke Gateway</div>
-      <div class="step-msg" id="msg-4">Menunggu...</div>
-    </div>
-  </div>
-
-  <div class="step" id="step-5">
-    <div class="step-icon pending" id="icon-5">5</div>
-    <div class="step-body">
-      <div class="step-name">Konfirmasi di Push Chain</div>
-      <div class="step-msg" id="msg-5">Menunggu...</div>
-    </div>
-  </div>
-
+  <div class="step"><div class="step-icon pending" id="icon-1">1</div><div class="step-body"><div class="step-name">Validasi Input</div><div class="step-msg" id="msg-1">Menunggu...</div></div></div>
+  <div class="step"><div class="step-icon pending" id="icon-2">2</div><div class="step-body"><div class="step-name">Approve Token (ERC20)</div><div class="step-msg" id="msg-2">Menunggu...</div></div></div>
+  <div class="step"><div class="step-icon pending" id="icon-3">3</div><div class="step-body"><div class="step-name">Kirim ke Gateway</div><div class="step-msg" id="msg-3">Menunggu...</div></div></div>
+  <div class="step"><div class="step-icon pending" id="icon-4">4</div><div class="step-body"><div class="step-name">Konfirmasi di Push Chain</div><div class="step-msg" id="msg-4">Menunggu...</div></div></div>
   <div class="tx-hash-box" id="txHashBox">
     <div class="tx-label">Source TX Hash</div>
     <div class="tx-val" id="txHashVal">—</div>
     <div class="tx-links">
-      <a href="#" id="explorerLink" class="tx-link" target="_blank">↗ Lihat di Explorer</a>
+      <a href="#" id="explorerLink" class="tx-link" target="_blank">↗ Explorer</a>
       <a href="https://donut.push.network" class="tx-link" target="_blank">↗ Push Chain Scan</a>
     </div>
   </div>
 </div>
 
-<div class="abi-note">
-  ✅ Bridge testnet Push Chain · fungsi: <code>sendFunds()</code> · App ini untuk <strong>testnet only</strong>.
-</div>
-
+<div class="abi-note">Push Chain Bridge • Donut Testnet • <strong>testnet only</strong></div>
 <div id="toast"></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
-//  KONFIGURASI
+//  CONFIG
 // ═══════════════════════════════════════════════════════════
 const CHAINS = {
   sepolia: {
-    name: 'Ethereum Sepolia',
-    chainId: '0xaa36a7',
-    rpc: 'https://rpc.sepolia.org',
-    explorer: 'https://sepolia.etherscan.io',
-    gateway: '0x05bD7a3D18324c1F7e216f7fBF2b15985aE5281A',
-    symbol: 'ETH',
+    name: 'Ethereum Sepolia', chainId: '0xaa36a7',
+    rpc: 'https://rpc.sepolia.org', explorer: 'https://sepolia.etherscan.io',
+    gateway: '0x05bD7a3D18324c1F7e216f7fBF2b15985aE5281A', symbol: 'ETH',
     tokens: {
-      native: { name: 'ETH (Native)', address: null, decimals: 18 },
-      usdc:   { name: 'USDC',        address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', decimals: 6  },
-      usdt:   { name: 'USDT',        address: '0x7169D38820dfd117C3FA1f22a697dBA58d90BA06', decimals: 6  },
-      weth:   { name: 'WETH',        address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14', decimals: 18 },
+      native: { name: 'ETH (Native)', address: null, decimals: 18, pushToken: null },
+      usdc: { name: 'USDC', address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', decimals: 6, pushToken: '0x387b9C8Db60E74999aAAC5A2b7825b400F12d68E' },
+      usdt: { name: 'USDT', address: '0x7169D38820dfd117C3FA1f22a697dBA58d90BA06', decimals: 6, pushToken: '0xCA0C5E6F002A389E1580F0DB7cd06e4549B5F9d3' },
+      weth: { name: 'WETH', address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14', decimals: 18, pushToken: '0x2971824Db68229D087931155C2b8bB820B275809' },
     }
   },
   arbitrum: {
-    name: 'Arbitrum Sepolia',
-    chainId: '0x66eee',
-    rpc: 'https://sepolia-rollup.arbitrum.io/rpc',
-    explorer: 'https://sepolia.arbiscan.io',
-    gateway: '0x2cd870e0166Ba458dEC615168Fd659AacD795f34',
-    symbol: 'ETH',
+    name: 'Arbitrum Sepolia', chainId: '0x66eee',
+    rpc: 'https://sepolia-rollup.arbitrum.io/rpc', explorer: 'https://sepolia.arbiscan.io',
+    gateway: '0x2cd870e0166Ba458dEC615168Fd659AacD795f34', symbol: 'ETH',
     tokens: {
-      native: { name: 'ETH (Native)', address: null, decimals: 18 },
-      usdc:   { name: 'USDC',        address: '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d', decimals: 6  },
-      usdt:   { name: 'USDT',        address: '0x1419d7C74D234fA6B73E06A2ce7822C1d37922f0', decimals: 6  },
+      native: { name: 'ETH (Native)', address: null, decimals: 18, pushToken: null },
+      usdc: { name: 'USDC', address: '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d', decimals: 6, pushToken: '0x387b9C8Db60E74999aAAC5A2b7825b400F12d68E' },
+      usdt: { name: 'USDT', address: '0x1419d7C74D234fA6B73E06A2ce7822C1d37922f0', decimals: 6, pushToken: '0xCA0C5E6F002A389E1580F0DB7cd06e4549B5F9d3' },
     }
   },
   base: {
-    name: 'Base Sepolia',
-    chainId: '0x14a34',
-    rpc: 'https://sepolia.base.org',
-    explorer: 'https://sepolia.basescan.org',
-    gateway: '0xFD4fef1F43aFEc8b5bcdEEc47f35a1431479aC16',
-    symbol: 'ETH',
+    name: 'Base Sepolia', chainId: '0x14a34',
+    rpc: 'https://sepolia.base.org', explorer: 'https://sepolia.basescan.org',
+    gateway: '0xFD4fef1F43aFEc8b5bcdEEc47f35a1431479aC16', symbol: 'ETH',
     tokens: {
-      native: { name: 'ETH (Native)', address: null, decimals: 18 },
-      usdc:   { name: 'USDC',        address: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', decimals: 6  },
-      usdt:   { name: 'USDT',        address: '0x9FF5a186f53F6E6964B00320Da1D2024DE11E0cB', decimals: 6  },
+      native: { name: 'ETH (Native)', address: null, decimals: 18, pushToken: null },
+      usdc: { name: 'USDC', address: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', decimals: 6, pushToken: '0x387b9C8Db60E74999aAAC5A2b7825b400F12d68E' },
+      usdt: { name: 'USDT', address: '0x9FF5a186f53F6E6964B00320Da1D2024DE11E0cB', decimals: 6, pushToken: '0xCA0C5E6F002A389E1580F0DB7cd06e4549B5F9d3' },
     }
   },
   bnb: {
-    name: 'BNB Testnet',
-    chainId: '0x61',
-    rpc: 'https://data-seed-prebsc-1-s1.binance.org:8545',
-    explorer: 'https://testnet.bscscan.com',
-    gateway: '0x44aFFC61983F4348DdddB886349eb992C061EaC0',
-    symbol: 'BNB',
+    name: 'BNB Testnet', chainId: '0x61',
+    rpc: 'https://data-seed-prebsc-1-s1.binance.org:8545', explorer: 'https://testnet.bscscan.com',
+    gateway: '0x44aFFC61983F4348DdddB886349eb992C061EaC0', symbol: 'BNB',
     tokens: {
-      native: { name: 'BNB (Native)', address: null, decimals: 18 },
-      usdt:   { name: 'USDT',        address: '0xBC14F348BC9667be46b35Edc9B68653d86013DC5', decimals: 18 },
+      native: { name: 'BNB (Native)', address: null, decimals: 18, pushToken: null },
+      usdt: { name: 'USDT', address: '0xBC14F348BC9667be46b35Edc9B68653d86013DC5', decimals: 18, pushToken: '0xCA0C5E6F002A389E1580F0DB7cd06e4549B5F9d3' },
     }
   }
 }
 
-const PUSH_CHAIN = {
-  chainId: 42101,
-  rpc: 'https://evm.donut.rpc.push.org/',
-  explorer: 'https://donut.push.network',
-}
+const PUSH_CHAIN = { rpc: 'https://evm.donut.rpc.push.org/' }
 
 const PUSH_TOKENS = {
-  peth_sep:  { address: '0x2971824Db68229D087931155C2b8bB820B275809', symbol: 'pETH',     decimals: 18 },
-  usdc_eth:  { address: '0x387b9C8Db60E74999aAAC5A2b7825b400F12d68E', symbol: 'USDC.eth', decimals: 6  },
-  usdt_eth:  { address: '0xCA0C5E6F002A389E1580F0DB7cd06e4549B5F9d3', symbol: 'USDT.eth', decimals: 6  },
-  psol:      { address: '0x5D525Df2bD99a6e7ec58b76aF2fd95F39874EBed', symbol: 'pSOL',     decimals: 9  },
+  peth:  { address: '0x2971824Db68229D087931155C2b8bB820B275809', decimals: 18 },
+  usdc:  { address: '0x387b9C8Db60E74999aAAC5A2b7825b400F12d68E', decimals: 6 },
+  usdt:  { address: '0xCA0C5E6F002A389E1580F0DB7cd06e4549B5F9d3', decimals: 6 },
+  psol:  { address: '0x5D525Df2bD99a6e7ec58b76aF2fd95F39874EBed', decimals: 9 },
 }
 
-// ─── FIX 1: ABI diperluas dengan semua fungsi read yang diperlukan ───
-// Menggunakan tuple[] syntax yang benar untuk ethers v6
-const GATEWAY_ABI = [
-  // FIX: Signature sendFunds yang benar — pastikan parameter struct sesuai dengan versi on-chain
-  // Dicoba dua format: dengan dan tanpa named struct param
-  `function sendFunds(
-    address recipient,
-    address bridgeToken,
-    uint256 bridgeAmount,
-    tuple(address fundRecipient) revertInstruction
-  ) external payable`,
-
-  // Read functions untuk debugging
-  'function isSupportedToken(address token) external view returns (bool)',
-  'function owner() external view returns (address)',
-
-  // Event
-  `event UniversalTx(
-    address indexed sender,
-    address indexed recipient,
-    address indexed token,
-    uint256 amount,
-    bytes payload,
-    tuple(address fundRecipient) revertInstruction,
-    uint8 txType,
-    bytes signatureData
-  )`,
-]
-
+// ─── ABIs ───
 const ERC20_ABI = [
-  'function balanceOf(address account) view returns (uint256)',
+  'function balanceOf(address) view returns (uint256)',
   'function decimals() view returns (uint8)',
-  'function symbol() view returns (string)',
   'function approve(address spender, uint256 amount) returns (bool)',
   'function allowance(address owner, address spender) view returns (uint256)',
 ]
 
-// ─── STATE ───
-let provider, signer, userAddress
-let selectedChain = 'sepolia'
-let selectedToken = 'native'
-let isBridging = false
+// ═══════════════════════════════════════════════════════════
+//  PAYLOAD BUILDER
+//  Dibangun berdasarkan reverse-engineering dari tx USDT yang sukses
+//  di Etherscan Sepolia
+// ═══════════════════════════════════════════════════════════
 
-// ─── UI HELPERS ───
+/**
+ * Encode inner cross-chain call payload.
+ * 
+ * Dari tx USDT yang sukses, payload berisi:
+ * - Beberapa field numerik (fees, nonce, limits)
+ * - Inner call: selector 0x2cc2842d + abi.encoded Call[] array
+ *   dimana Call = { target: pushChainTokenAddress, value: 0, callData: transfer(recipient, amount) }
+ * 
+ * Ini adalah format yang dipakai gateway untuk instruksikan Push Chain
+ * apa yang harus dilakukan setelah menerima token.
+ */
+function buildPayload(pushChainTokenAddress, recipientAddress, amount) {
+  const abiCoder = ethers.AbiCoder.defaultAbiCoder()
+
+  // Inner calldata: transfer(recipient, amount)
+  // transfer(address,uint256) selector = 0xa9059cbb
+  const transferSelector = '0xa9059cbb'
+  const transferCalldata = transferSelector + abiCoder.encode(
+    ['address', 'uint256'],
+    [recipientAddress, amount]
+  ).slice(2) // hapus 0x prefix
+
+  // Encode Call struct array: [{ target, value, callData }]
+  // selector 0x2cc2842d diikuti abi.encode(Call[])
+  const innerCallEncoded = abiCoder.encode(
+    ['tuple(address target, uint256 value, bytes callData)[]'],
+    [[{
+      target: pushChainTokenAddress,
+      value: 0n,
+      callData: transferCalldata
+    }]]
+  )
+
+  const innerCall = '0x2cc2842d' + innerCallEncoded.slice(2)
+
+  // Outer payload structure (dari analisis tx USDT):
+  // [0] uint256: 0 (field kosong/reserved)
+  // [1] uint256: 0 (field kosong/reserved)  
+  // [2] uint256: offset ke inner data = 0x120 (288)
+  // [3] uint256: 0x989680 (10,000,000 - mungkin min fee atau nonce)
+  // [4] uint256: 0x2540be400 (10,000,000,000 - mungkin max fee)
+  // [5] uint256: 0 
+  // [6] uint256: 5 (mungkin confirmation blocks atau chain ID related)
+  // [7] uint256: 0x2540be3ff (max fee - 1)
+  // [8] uint256: 1 (jumlah inner calls)
+  // [9] uint256: 0x144 = 324 (length of inner call bytes)
+  // [10+] bytes: inner call data
+  //
+  // CATATAN: Field 0-1 dan 5 adalah zero padding
+  // Field 3,4,7 kemungkinan fee parameters yang di-set gateway
+  // Kita mirror exact values dari USDT tx yang sukses
+
+  const innerCallBytes = ethers.getBytes(innerCall)
+  const innerCallLen = BigInt(innerCallBytes.length)
+
+  // Encode outer payload
+  const outerPayload = abiCoder.encode(
+    ['uint256','uint256','uint256','uint256','uint256','uint256','uint256','uint256','uint256','uint256','bytes'],
+    [
+      0n,           // [0] reserved
+      0n,           // [1] reserved
+      288n,         // [2] offset to dynamic data (9 * 32 = 288)
+      10000000n,    // [3] 0x989680 - fee param dari tx sukses
+      10000000000n, // [4] 0x2540be400 - fee param dari tx sukses
+      0n,           // [5] reserved
+      5n,           // [6] nilai dari tx sukses
+      9999999999n,  // [7] 0x2540be3ff - fee param dari tx sukses
+      1n,           // [8] jumlah calls
+      innerCallLen, // [9] length of inner call
+      innerCallBytes, // [10] inner call bytes
+    ]
+  )
+
+  return outerPayload
+}
+
+/**
+ * Build complete calldata untuk sendFunds() berdasarkan struct dari tx USDT sukses.
+ * 
+ * Function selector: 0x5b752187
+ * Struct req = {
+ *   recipient: address (zero address - gateway handle routing),
+ *   token: address (source chain token address),
+ *   amount: uint256,
+ *   payload: bytes (cross-chain call instructions),
+ *   revertInstruction: { fundRecipient: address, revertMsg: bytes },
+ *   signatureData: bytes (kosong)
+ * }
+ */
+function buildSendFundsCalldata(tokenAddress, amount, payload, userAddress) {
+  const abiCoder = ethers.AbiCoder.defaultAbiCoder()
+
+  // Encode struct req
+  const reqEncoded = abiCoder.encode(
+    [`tuple(
+      address recipient,
+      address token,
+      uint256 amount,
+      bytes payload,
+      tuple(address fundRecipient, bytes revertMsg) revertInstruction,
+      bytes signatureData
+    )`],
+    [{
+      recipient: ethers.ZeroAddress, // zero address = gateway routes ke Push Chain
+      token: tokenAddress,
+      amount: amount,
+      payload: payload,
+      revertInstruction: {
+        fundRecipient: userAddress,
+        revertMsg: '0x'
+      },
+      signatureData: '0x'
+    }]
+  )
+
+  // Function selector 0x5b752187 (dari tx USDT yang sukses di Etherscan)
+  return '0x5b752187' + reqEncoded.slice(2)
+}
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let provider, signer, userAddress
+let selectedChain = 'sepolia', selectedToken = 'native', isBridging = false
+
+// ─── HELPERS ───
 function showToast(msg, type='success') {
   const t = document.getElementById('toast')
-  t.textContent = msg
-  t.className = `show ${type}`
+  t.textContent = msg; t.className = `show ${type}`
   setTimeout(() => t.className = '', 3500)
 }
-
-function fmt(val, decimals=4) {
+function fmt(val, d=4) {
   const n = parseFloat(val)
-  if (isNaN(n)) return '—'
-  if (n === 0) return '0.00'
-  if (n < 0.0001) return '<0.0001'
-  return n.toFixed(decimals)
+  if (isNaN(n) || n === 0) return n === 0 ? '0.00' : '—'
+  return n < 0.0001 ? '<0.0001' : n.toFixed(d)
 }
-
-function shortAddr(addr) {
-  if (!addr) return ''
-  return addr.slice(0,6) + '...' + addr.slice(-4)
-}
-
+function short(addr) { return addr ? addr.slice(0,6) + '...' + addr.slice(-4) : '' }
 function setStep(num, status, msg='') {
   const icon = document.getElementById(`icon-${num}`)
   const msgEl = document.getElementById(`msg-${num}`)
   icon.className = `step-icon ${status}`
-  const icons = { pending:'●', active:'↻', done:'✓', error:'✕' }
-  icon.textContent = icons[status] || num
+  icon.textContent = {pending:'●', active:'↻', done:'✓', error:'✕'}[status] || num
   if (msg) msgEl.textContent = msg
-}
-
-// FIX 2: Fungsi khusus cek apakah token supported sebelum memulai bridge
-// Menampilkan warning di UI sebelum user klik Bridge
-async function checkTokenSupport(chainKey, tokenKey) {
-  const chain = CHAINS[chainKey]
-  const token = chain?.tokens[tokenKey]
-  const warnBox = document.getElementById('tokenWarnBox')
-  const warnMsg = document.getElementById('tokenWarnMsg')
-
-  if (!token || !token.address) {
-    warnBox.style.display = 'none'
-    return true // native selalu supported
-  }
-
-  if (!userAddress) {
-    warnBox.style.display = 'none'
-    return true
-  }
-
-  try {
-    // Buat provider langsung ke RPC chain yang dipilih (bukan wallet provider)
-    // agar bisa baca contract walaupun wallet di chain lain
-    const readProvider = new ethers.JsonRpcProvider(chain.rpc)
-    const gateway = new ethers.Contract(chain.gateway, GATEWAY_ABI, readProvider)
-    const supported = await gateway.isSupportedToken(token.address)
-
-    if (!supported) {
-      warnBox.style.display = 'block'
-      warnMsg.textContent = `${token.name} BELUM di-whitelist di gateway ${chain.name}. Gunakan ETH Native dulu, atau coba chain lain.`
-      return false
-    } else {
-      warnBox.style.display = 'none'
-      return true
-    }
-  } catch(e) {
-    console.warn('Tidak bisa cek isSupportedToken:', e.message)
-    // Jika fungsi tidak ada / revert, anggap supported dan biarkan bridge coba
-    warnBox.style.display = 'none'
-    return true
-  }
 }
 
 // ─── WALLET ───
 async function connectWallet() {
-  if (!window.ethereum) {
-    showToast('MetaMask tidak ditemukan!', 'error')
-    return
-  }
+  if (!window.ethereum) { showToast('MetaMask tidak ditemukan!', 'error'); return }
   try {
     provider = new ethers.BrowserProvider(window.ethereum)
     await provider.send('eth_requestAccounts', [])
     signer = await provider.getSigner()
     userAddress = await signer.getAddress()
-
     const btn = document.getElementById('connectBtn')
-    btn.innerHTML = `<span class="dot-connected"></span>${shortAddr(userAddress)}`
+    btn.innerHTML = `<span class="dot-connected"></span>${short(userAddress)}`
     btn.classList.add('connected')
-
-    document.getElementById('recipientDisplay').textContent = shortAddr(userAddress)
+    document.getElementById('recipientDisplay').textContent = short(userAddress)
     document.getElementById('bridgeBtn').disabled = false
     document.getElementById('bridgeBtn').textContent = 'Bridge →'
-
-    await switchToChain(selectedChain)
+    await switchChain(selectedChain)
     await refreshBalances()
-    await checkTokenSupport(selectedChain, selectedToken)
-
     window.ethereum.on('accountsChanged', () => location.reload())
     window.ethereum.on('chainChanged', () => location.reload())
     showToast('Wallet terhubung! ✓')
-  } catch(e) {
-    showToast('Gagal connect: ' + e.message, 'error')
-  }
+  } catch(e) { showToast('Gagal connect: ' + e.message, 'error') }
 }
 
-async function switchToChain(chainKey) {
-  const chain = CHAINS[chainKey]
-  if (!chain || !window.ethereum) return
+async function switchChain(key) {
+  const c = CHAINS[key]
+  if (!c || !window.ethereum) return
+  const params = {
+    sepolia:  { chainName:'Ethereum Sepolia', nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://rpc.sepolia.org'], blockExplorerUrls:['https://sepolia.etherscan.io'] },
+    arbitrum: { chainName:'Arbitrum Sepolia', nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://sepolia-rollup.arbitrum.io/rpc'], blockExplorerUrls:['https://sepolia.arbiscan.io'] },
+    base:     { chainName:'Base Sepolia',     nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://sepolia.base.org'], blockExplorerUrls:['https://sepolia.basescan.org'] },
+    bnb:      { chainName:'BNB Testnet',      nativeCurrency:{name:'BNB',symbol:'BNB',decimals:18}, rpcUrls:['https://data-seed-prebsc-1-s1.binance.org:8545'], blockExplorerUrls:['https://testnet.bscscan.com'] },
+  }
   try {
-    await window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: chain.chainId }],
-    })
+    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: c.chainId }] })
   } catch(e) {
     if (e.code === 4902) {
-      const chainParams = {
-        sepolia:  { chainName:'Ethereum Sepolia', nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://rpc.sepolia.org'], blockExplorerUrls:['https://sepolia.etherscan.io'] },
-        arbitrum: { chainName:'Arbitrum Sepolia', nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://sepolia-rollup.arbitrum.io/rpc'], blockExplorerUrls:['https://sepolia.arbiscan.io'] },
-        base:     { chainName:'Base Sepolia',     nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://sepolia.base.org'], blockExplorerUrls:['https://sepolia.basescan.org'] },
-        bnb:      { chainName:'BNB Testnet',      nativeCurrency:{name:'BNB',symbol:'BNB',decimals:18}, rpcUrls:['https://data-seed-prebsc-1-s1.binance.org:8545'], blockExplorerUrls:['https://testnet.bscscan.com'] },
-      }
-      try {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{ chainId: chain.chainId, ...chainParams[chainKey] }],
-        })
-      } catch(err) { console.error('Gagal tambah chain:', err) }
+      try { await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: c.chainId, ...params[key] }] }) }
+      catch(err) { console.error(err) }
     }
   }
 }
@@ -708,35 +433,29 @@ async function refreshBalances() {
   try {
     const chain = CHAINS[selectedChain]
     const token = chain.tokens[selectedToken]
-    if (!token) {
-      document.getElementById('srcBalance').textContent = '—'
-    } else if (!token.address) {
+    if (!token?.address) {
       const bal = await provider.getBalance(userAddress)
       document.getElementById('srcBalance').textContent = fmt(ethers.formatEther(bal)) + ' ' + chain.symbol
     } else {
-      const erc20 = new ethers.Contract(token.address, ERC20_ABI, provider)
-      const bal = await erc20.balanceOf(userAddress)
+      const c = new ethers.Contract(token.address, ERC20_ABI, provider)
+      const bal = await c.balanceOf(userAddress)
       document.getElementById('srcBalance').textContent = fmt(ethers.formatUnits(bal, token.decimals)) + ' ' + token.name
     }
-  } catch(e) {
-    document.getElementById('srcBalance').textContent = 'Error'
-  }
+  } catch(e) { document.getElementById('srcBalance').textContent = 'Error' }
 
   try {
-    const pushProvider = new ethers.JsonRpcProvider(PUSH_CHAIN.rpc)
-    const balIds = ['peth_sep','usdc_eth','usdt_eth','psol']
-    const uiIds  = ['bal-peth','bal-usdc','bal-usdt','bal-psol']
-    for (let i = 0; i < balIds.length; i++) {
-      const tok = PUSH_TOKENS[balIds[i]]
+    const pp = new ethers.JsonRpcProvider(PUSH_CHAIN.rpc)
+    const ids = ['peth','usdc','usdt','psol']
+    const uis = ['bal-peth','bal-usdc','bal-usdt','bal-psol']
+    for (let i = 0; i < ids.length; i++) {
       try {
-        const contract = new ethers.Contract(tok.address, ERC20_ABI, pushProvider)
-        const bal = await contract.balanceOf(userAddress)
-        document.getElementById(uiIds[i]).textContent = fmt(ethers.formatUnits(bal, tok.decimals))
-      } catch {
-        document.getElementById(uiIds[i]).textContent = '?'
-      }
+        const tok = PUSH_TOKENS[ids[i]]
+        const c = new ethers.Contract(tok.address, ERC20_ABI, pp)
+        const bal = await c.balanceOf(userAddress)
+        document.getElementById(uis[i]).textContent = fmt(ethers.formatUnits(bal, tok.decimals))
+      } catch { document.getElementById(uis[i]).textContent = '?' }
     }
-  } catch(e) { console.error('Push Chain balance error:', e) }
+  } catch(e) {}
 }
 
 // ─── SELECTORS ───
@@ -746,249 +465,148 @@ document.getElementById('chainRow').addEventListener('click', async (e) => {
   document.querySelectorAll('.chain-btn').forEach(b => b.classList.remove('active'))
   btn.classList.add('active')
   selectedChain = btn.dataset.chain
-
   const chain = CHAINS[selectedChain]
   const sel = document.getElementById('tokenSelect')
-  sel.innerHTML = Object.entries(chain.tokens)
-    .map(([k, t]) => `<option value="${k}">${t.name}</option>`)
-    .join('')
+  sel.innerHTML = Object.entries(chain.tokens).map(([k,t]) => `<option value="${k}">${t.name}</option>`).join('')
   selectedToken = Object.keys(chain.tokens)[0]
-
-  if (userAddress) {
-    await switchToChain(selectedChain)
-    await refreshBalances()
-    await checkTokenSupport(selectedChain, selectedToken)
-  }
+  if (userAddress) { await switchChain(selectedChain); await refreshBalances() }
 })
 
 document.getElementById('tokenSelect').addEventListener('change', async (e) => {
   selectedToken = e.target.value
-  if (userAddress) {
-    await refreshBalances()
-    await checkTokenSupport(selectedChain, selectedToken)
-  }
+  if (userAddress) await refreshBalances()
 })
 
 document.getElementById('maxBtn').addEventListener('click', async () => {
   if (!userAddress) { showToast('Connect wallet dulu!', 'error'); return }
-  const chain = CHAINS[selectedChain]
-  const token = chain.tokens[selectedToken]
+  const token = CHAINS[selectedChain].tokens[selectedToken]
   try {
     if (!token.address) {
       const bal = await provider.getBalance(userAddress)
       const leave = ethers.parseEther('0.01')
-      const max = bal > leave ? bal - leave : 0n
-      document.getElementById('amountInput').value = ethers.formatEther(max)
+      document.getElementById('amountInput').value = ethers.formatEther(bal > leave ? bal - leave : 0n)
     } else {
-      const erc20 = new ethers.Contract(token.address, ERC20_ABI, provider)
-      const bal = await erc20.balanceOf(userAddress)
+      const c = new ethers.Contract(token.address, ERC20_ABI, provider)
+      const bal = await c.balanceOf(userAddress)
       document.getElementById('amountInput').value = ethers.formatUnits(bal, token.decimals)
     }
   } catch(e) { showToast('Gagal ambil balance', 'error') }
 })
 
 // ═══════════════════════════════════════════════════════════
-//  BRIDGE — VERSI FIXED
+//  BRIDGE — menggunakan struct yang benar dari reverse engineering
 // ═══════════════════════════════════════════════════════════
 document.getElementById('bridgeBtn').addEventListener('click', doBridge)
 
 async function doBridge() {
   if (isBridging) return
   if (!userAddress) { showToast('Connect wallet dulu!', 'error'); return }
-
   const amountStr = document.getElementById('amountInput').value.trim()
-  if (!amountStr || parseFloat(amountStr) <= 0) {
-    showToast('Masukkan jumlah yang valid!', 'error')
-    return
-  }
+  if (!amountStr || parseFloat(amountStr) <= 0) { showToast('Masukkan jumlah yang valid!', 'error'); return }
 
   isBridging = true
   document.getElementById('bridgeBtn').disabled = true
   document.getElementById('bridgeBtn').textContent = 'Bridging...'
   document.getElementById('progressCard').style.display = 'block'
   document.getElementById('txHashBox').classList.remove('visible')
-
-  for (let i = 1; i <= 5; i++) setStep(i, 'pending', 'Menunggu...')
+  for (let i = 1; i <= 4; i++) setStep(i, 'pending', 'Menunggu...')
 
   const chain = CHAINS[selectedChain]
   const token = chain.tokens[selectedToken]
 
   try {
     // ── Step 1: Validasi ──
-    setStep(1, 'active', 'Validasi input...')
-    await switchToChain(selectedChain)
+    setStep(1, 'active', 'Validasi & switch chain...')
+    await switchChain(selectedChain)
     provider = new ethers.BrowserProvider(window.ethereum)
     signer = await provider.getSigner()
 
     let amount
-    try {
-      amount = ethers.parseUnits(amountStr, token.decimals)
-    } catch {
-      throw new Error('Format jumlah tidak valid')
+    try { amount = ethers.parseUnits(amountStr, token.decimals) }
+    catch { throw new Error('Format jumlah tidak valid') }
+    if (amount <= 0n) throw new Error('Jumlah harus > 0')
+
+    // Validasi: token ERC20 harus punya pushToken address
+    if (token.address && !token.pushToken) {
+      throw new Error(`Token ${token.name} tidak punya mapping ke Push Chain token. Gunakan ETH Native.`)
     }
 
-    if (amount <= 0n) throw new Error('Jumlah harus lebih dari 0')
     setStep(1, 'done', '✓ Input valid')
 
-    // ── FIX 3: Step 2 — Cek token support SEBELUM approve ──
-    // Ini mencegah waste gas approve jika token tidak di-whitelist
-    setStep(2, 'active', 'Memeriksa apakah token didukung gateway...')
+    // ── Step 2: Approve ERC20 ──
     if (token.address) {
-      try {
-        // Gunakan JsonRpcProvider langsung (bukan wallet provider)
-        // agar tidak butuh switch chain dulu
-        const readProvider = new ethers.JsonRpcProvider(chain.rpc)
-        const gatewayRead = new ethers.Contract(chain.gateway, GATEWAY_ABI, readProvider)
-        const supported = await gatewayRead.isSupportedToken(token.address)
-        if (!supported) {
-          throw new Error(
-            `Token ${token.name} BELUM di-whitelist di gateway ${chain.name}.\n` +
-            `Solusi: Gunakan ETH Native, atau coba dari chain lain (Base/Arbitrum).\n` +
-            `Jika kamu yakin token ini harusnya supported, hub Push Chain Discord.`
-          )
-        }
-        setStep(2, 'done', `✓ ${token.name} didukung gateway`)
-      } catch(e) {
-        if (e.message.includes('BELUM di-whitelist')) throw e
-        // isSupportedToken function tidak ada / revert dengan alasan lain — lanjut saja
-        console.warn('isSupportedToken unavailable, skipping check:', e.message)
-        setStep(2, 'done', '✓ Skip cek (fungsi tidak tersedia di gateway ini)')
-      }
-    } else {
-      setStep(2, 'done', '✓ Native token, selalu supported')
-    }
-
-    // ── Step 3: Approve (ERC20 only) ──
-    if (token.address) {
-      setStep(3, 'active', 'Memeriksa allowance...')
+      setStep(2, 'active', 'Memeriksa allowance...')
       const erc20 = new ethers.Contract(token.address, ERC20_ABI, signer)
       const allowance = await erc20.allowance(userAddress, chain.gateway)
-
       if (allowance < amount) {
-        setStep(3, 'active', 'Menunggu approval di MetaMask...')
-        // FIX 4: Approve dengan jumlah exact (bukan MaxUint256) agar lebih aman
-        // tapi bisa juga pakai MaxUint256 agar tidak perlu approve lagi
+        setStep(2, 'active', 'Menunggu approval di MetaMask...')
         const approveTx = await erc20.approve(chain.gateway, amount)
-        setStep(3, 'active', `Approve tx: ${shortAddr(approveTx.hash)} — konfirmasi...`)
+        setStep(2, 'active', `Konfirmasi approve: ${short(approveTx.hash)}`)
         await approveTx.wait(1)
-        setStep(3, 'done', '✓ Token diapprove')
+        setStep(2, 'done', '✓ Token diapprove')
       } else {
-        setStep(3, 'done', '✓ Allowance cukup, skip approve')
+        setStep(2, 'done', '✓ Allowance cukup')
       }
     } else {
-      setStep(3, 'done', '✓ Native token, tidak perlu approve')
+      if (amount < ethers.parseEther('0.001')) throw new Error('Min ETH: 0.001')
+      setStep(2, 'done', '✓ Native token, skip approve')
     }
 
-    // ── FIX 5: Step 4 — sendFunds dengan encoding yang benar ──
-    setStep(4, 'active', 'Menunggu konfirmasi di MetaMask...')
-    const gateway = new ethers.Contract(chain.gateway, GATEWAY_ABI, signer)
+    // ── Step 3: Build calldata & kirim TX ──
+    setStep(3, 'active', 'Membangun calldata...')
 
-    // FIX 6: revertInstruction struct
-    // Ethers v6 butuh array untuk tuple, BUKAN object, saat encode ke contract
-    // Format yang benar: [address] untuk tuple(address fundRecipient)
-    const revertInstruction = [userAddress]  // <-- INI PERBAIKAN UTAMA
+    let calldata, txValue = 0n
 
-    let tx
     if (!token.address) {
-      // Native ETH/BNB
-      if (amount < ethers.parseEther('0.001')) {
-        throw new Error('Jumlah minimum native adalah 0.001 ETH')
-      }
-
-      // FIX 7: Estimasi gas dulu untuk dapat error yang lebih jelas
-      try {
-        await gateway.sendFunds.estimateGas(
-          userAddress,
-          ethers.ZeroAddress,
-          amount,
-          revertInstruction,
-          { value: amount }
-        )
-      } catch(estimateErr) {
-        // Jika estimasi gagal, coba decode error lebih detail
-        console.error('EstimateGas failed:', estimateErr)
-        throw new Error(
-          `Contract revert saat estimasi gas. ` +
-          `Pastikan wallet punya cukup ETH testnet dan gateway address masih aktif.\n` +
-          `Detail: ${estimateErr.shortMessage || estimateErr.message}`
-        )
-      }
-
-      tx = await gateway.sendFunds(
-        userAddress,
-        ethers.ZeroAddress,
-        amount,
-        revertInstruction,
-        { value: amount }
-      )
+      // === NATIVE ETH ===
+      // Untuk native: langsung pakai sendFunds(address, address(0), amount, revertInstruction)
+      // Format sendFunds lama yang mungkin masih berlaku untuk native
+      // Atau kita bisa encode sebagai struct juga dengan token = address(0)
+      const payload = '0x' // native tidak butuh payload cross-chain call
+      calldata = buildSendFundsCalldataNative(amount, userAddress)
+      txValue = amount
     } else {
-      // ERC20
-
-      // FIX 7: Estimasi gas dulu
-      try {
-        await gateway.sendFunds.estimateGas(
-          userAddress,
-          token.address,
-          amount,
-          revertInstruction
-        )
-      } catch(estimateErr) {
-        console.error('EstimateGas failed:', estimateErr)
-        throw new Error(
-          `Contract revert saat estimasi gas untuk ${token.name}.\n` +
-          `Kemungkinan: token tidak di-whitelist, atau allowance kurang.\n` +
-          `Detail: ${estimateErr.shortMessage || estimateErr.message}`
-        )
-      }
-
-      tx = await gateway.sendFunds(
-        userAddress,
-        token.address,
-        amount,
-        revertInstruction
-      )
+      // === ERC20 (USDC, USDT, WETH) ===
+      // Build cross-chain payload
+      setStep(3, 'active', 'Encode cross-chain payload...')
+      const payload = buildPayload(token.pushToken, userAddress, amount)
+      calldata = buildSendFundsCalldata(token.address, amount, payload, userAddress)
     }
 
-    setStep(4, 'active', `Tx terkirim: ${shortAddr(tx.hash)}`)
+    setStep(3, 'active', 'Menunggu konfirmasi di MetaMask...')
 
+    // Kirim raw transaction
+    const tx = await signer.sendTransaction({
+      to: chain.gateway,
+      data: calldata,
+      value: txValue,
+    })
+
+    setStep(3, 'active', `Tx terkirim: ${short(tx.hash)}`)
     document.getElementById('txHashVal').textContent = tx.hash
     document.getElementById('explorerLink').href = `${chain.explorer}/tx/${tx.hash}`
     document.getElementById('txHashBox').classList.add('visible')
 
     await tx.wait(1)
-    setStep(4, 'done', `✓ Konfirmasi di ${chain.name}`)
+    setStep(3, 'done', `✓ Confirmed on ${chain.name}`)
 
-    // ── Step 5: Tunggu Push Chain ──
-    setStep(5, 'active', 'Menunggu relay ke Push Chain (~2-5 menit)...')
-
+    // ── Step 4: Poll Push Chain ──
+    setStep(4, 'active', 'Menunggu relay ke Push Chain (~2–5 menit)...')
     let attempts = 0
-    const maxAttempts = 20
-    const pollInterval = setInterval(async () => {
+    const poll = setInterval(async () => {
       attempts++
-      setStep(5, 'active', `Polling Push Chain... (${attempts}/${maxAttempts})`)
+      setStep(4, 'active', `Polling Push Chain... (${attempts}/20)`)
       await refreshBalances()
-      if (attempts >= maxAttempts) {
-        clearInterval(pollInterval)
-        setStep(5, 'done', '✓ Selesai! Cek balance di Push Chain Scan')
-        doneState()
-      }
+      if (attempts >= 20) { clearInterval(poll); setStep(4, 'done', '✓ Done! Cek balance Push Chain'); doneState() }
     }, 15000)
-
-    setTimeout(() => {
-      clearInterval(pollInterval)
-      setStep(5, 'done', '✓ TX sukses! Token akan segera muncul di Push Chain')
-      doneState()
-    }, 30000)
-
-    showToast('Bridge berhasil! Menunggu Push Chain 🎉')
+    setTimeout(() => { clearInterval(poll); setStep(4, 'done', '✓ TX sukses! Token akan muncul di Push Chain'); doneState() }, 30000)
+    showToast('Bridge berhasil! 🎉')
 
   } catch(e) {
     console.error(e)
     const msg = e?.reason || e?.shortMessage || e?.message || 'Unknown error'
-
-    for (let i = 1; i <= 5; i++) {
-      const icon = document.getElementById(`icon-${i}`)
-      if (icon.classList.contains('active')) {
+    for (let i = 1; i <= 4; i++) {
+      if (document.getElementById(`icon-${i}`).classList.contains('active')) {
         setStep(i, 'error', '✕ ' + msg.slice(0, 100))
         break
       }
@@ -996,6 +614,34 @@ async function doBridge() {
     showToast('Error: ' + msg.slice(0, 60), 'error')
     doneState()
   }
+}
+
+/**
+ * Untuk native ETH, gunakan format sendFunds yang lebih sederhana
+ * Berdasarkan observasi: native mungkin pakai format berbeda
+ */
+function buildSendFundsCalldataNative(amount, userAddress) {
+  const abiCoder = ethers.AbiCoder.defaultAbiCoder()
+  // Coba format struct yang sama tapi token = address(0) dan payload kosong
+  const encoded = abiCoder.encode(
+    [`tuple(
+      address recipient,
+      address token,
+      uint256 amount,
+      bytes payload,
+      tuple(address fundRecipient, bytes revertMsg) revertInstruction,
+      bytes signatureData
+    )`],
+    [{
+      recipient: ethers.ZeroAddress,
+      token: ethers.ZeroAddress,   // native = zero address
+      amount: amount,
+      payload: '0x',               // payload kosong untuk native
+      revertInstruction: { fundRecipient: userAddress, revertMsg: '0x' },
+      signatureData: '0x'
+    }]
+  )
+  return '0x5b752187' + encoded.slice(2)
 }
 
 function doneState() {
@@ -1007,7 +653,6 @@ function doneState() {
 
 // ─── INIT ───
 document.getElementById('connectBtn').addEventListener('click', connectWallet)
-
 ;(async () => {
   if (window.ethereum) {
     const accounts = await window.ethereum.request({ method: 'eth_accounts' })
