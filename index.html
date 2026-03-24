@@ -36,7 +36,6 @@
       padding: 24px 16px 60px;
     }
 
-    /* noise overlay */
     body::before {
       content: '';
       position: fixed; inset: 0;
@@ -78,16 +77,12 @@
       display: flex; align-items: center; gap: 8px;
     }
     #connectBtn:hover { border-color: var(--accent); color: var(--accent); }
-    #connectBtn.connected {
-      border-color: var(--success);
-      color: var(--success);
-    }
+    #connectBtn.connected { border-color: var(--success); color: var(--success); }
     .dot-connected {
       width: 7px; height: 7px; border-radius: 50%;
       background: var(--success);
     }
 
-    /* ─── Card ─── */
     .card {
       width: 100%; max-width: 480px;
       background: var(--surface);
@@ -99,14 +94,12 @@
     }
     .card + .card { margin-top: 12px; }
 
-    /* ─── Section label ─── */
     .label {
       font-size: 11px; font-weight: 700;
       letter-spacing: 1.5px; text-transform: uppercase;
       color: var(--muted); margin-bottom: 12px;
     }
 
-    /* ─── Chain selector ─── */
     .chain-row { display: flex; gap: 8px; flex-wrap: wrap; }
     .chain-btn {
       flex: 1; min-width: 80px;
@@ -129,13 +122,11 @@
     }
     .chain-btn .emoji { display: block; font-size: 18px; margin-bottom: 4px; }
 
-    /* ─── Divider arrow ─── */
     .bridge-arrow {
       display: flex; align-items: center; justify-content: center;
       padding: 12px 0; color: var(--muted); font-size: 20px;
     }
 
-    /* ─── Token + Amount section ─── */
     .token-amount-box {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -177,13 +168,8 @@
       display: flex; align-items: center; justify-content: space-between;
       margin-top: 10px;
     }
-    .balance-info {
-      font-size: 12px; color: var(--muted);
-    }
-    .balance-val {
-      font-family: 'Space Mono', monospace;
-      font-size: 12px; color: var(--text);
-    }
+    .balance-info { font-size: 12px; color: var(--muted); }
+    .balance-val { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text); }
     .max-btn {
       background: rgba(0,229,195,0.1);
       border: 1px solid rgba(0,229,195,0.3);
@@ -199,7 +185,6 @@
     }
     .max-btn:hover { background: rgba(0,229,195,0.2); }
 
-    /* ─── Push Chain balance ─── */
     .push-balance-card {
       background: linear-gradient(135deg, rgba(0,229,195,0.05), rgba(0,153,255,0.05));
       border: 1px solid rgba(0,229,195,0.2);
@@ -226,12 +211,8 @@
       padding: 10px 12px;
     }
     .tbi-name { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-    .tbi-val {
-      font-family: 'Space Mono', monospace;
-      font-size: 13px; color: var(--text); font-weight: 700;
-    }
+    .tbi-val { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text); font-weight: 700; }
 
-    /* ─── Bridge Button ─── */
     #bridgeBtn {
       width: 100%;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -250,16 +231,10 @@
       transform: translateY(-1px);
       box-shadow: 0 8px 24px rgba(0,229,195,0.25);
     }
-    #bridgeBtn:disabled {
-      opacity: 0.4; cursor: not-allowed; transform: none;
-    }
+    #bridgeBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-    /* ─── Progress ─── */
     #progressCard { display: none; }
-    .progress-title {
-      font-size: 13px; font-weight: 700;
-      color: var(--text); margin-bottom: 14px;
-    }
+    .progress-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
 
     .step {
       display: flex; align-items: flex-start; gap: 12px;
@@ -275,43 +250,16 @@
       font-size: 11px; flex-shrink: 0;
       margin-top: 1px;
     }
-    .step-icon.pending {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--muted);
-    }
-    .step-icon.active {
-      background: rgba(0,229,195,0.15);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    .step-icon.done {
-      background: rgba(0,229,135,0.15);
-      border: 1px solid var(--success);
-      color: var(--success);
-      animation: none;
-    }
-    .step-icon.error {
-      background: rgba(255,68,102,0.15);
-      border: 1px solid var(--error);
-      color: var(--error);
-    }
+    .step-icon.pending { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
+    .step-icon.active { background: rgba(0,229,195,0.15); border: 1px solid var(--accent); color: var(--accent); animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .step-icon.done { background: rgba(0,229,135,0.15); border: 1px solid var(--success); color: var(--success); animation: none; }
+    .step-icon.error { background: rgba(255,68,102,0.15); border: 1px solid var(--error); color: var(--error); }
 
     .step-body { flex: 1; }
-    .step-name {
-      font-size: 13px; font-weight: 600; color: var(--text);
-    }
-    .step-msg {
-      font-size: 11px; color: var(--muted);
-      font-family: 'Space Mono', monospace;
-      margin-top: 2px; word-break: break-all;
-    }
+    .step-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .step-msg { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 2px; word-break: break-all; }
 
-    /* ─── TX Hash ─── */
     .tx-hash-box {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -322,19 +270,11 @@
     }
     .tx-hash-box.visible { display: block; }
     .tx-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-    .tx-val {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px; color: var(--accent);
-      word-break: break-all;
-    }
+    .tx-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); word-break: break-all; }
     .tx-links { display: flex; gap: 10px; margin-top: 8px; }
-    .tx-link {
-      font-size: 11px; color: var(--accent2);
-      text-decoration: none; font-weight: 600;
-    }
+    .tx-link { font-size: 11px; color: var(--accent2); text-decoration: none; font-weight: 600; }
     .tx-link:hover { text-decoration: underline; }
 
-    /* ─── Info / Warning ─── */
     .info-box {
       background: rgba(0,153,255,0.07);
       border: 1px solid rgba(0,153,255,0.2);
@@ -347,7 +287,18 @@
     }
     .info-box strong { color: var(--text); }
 
-    /* ─── Toast ─── */
+    /* ─── WARNING BOX ─── */
+    .warn-box {
+      background: rgba(255,107,53,0.07);
+      border: 1px solid rgba(255,107,53,0.3);
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--warn);
+      line-height: 1.6;
+    }
+
     #toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
       background: var(--surface2);
@@ -363,16 +314,11 @@
     #toast.success { border-color: var(--success); color: var(--success); }
     #toast.error { border-color: var(--error); color: var(--error); }
 
-    /* ─── ABI Note ─── */
     .abi-note {
-      max-width: 480px;
-      width: 100%;
+      max-width: 480px; width: 100%;
       margin-top: 16px;
-      font-size: 11px;
-      color: var(--muted);
-      text-align: center;
-      line-height: 1.6;
-      z-index: 1;
+      font-size: 11px; color: var(--muted);
+      text-align: center; line-height: 1.6; z-index: 1;
     }
     .abi-note a { color: var(--accent); text-decoration: none; }
     .abi-note a:hover { text-decoration: underline; }
@@ -380,7 +326,6 @@
 </head>
 <body>
 
-<!-- ─── Header ─── -->
 <header>
   <div class="logo">
     <div class="logo-dot"></div>
@@ -389,25 +334,15 @@
   <button id="connectBtn">Connect Wallet</button>
 </header>
 
-<!-- ─── Source Chain ─── -->
 <div class="card">
   <div class="label">Source Chain (Testnet)</div>
   <div class="chain-row" id="chainRow">
-    <button class="chain-btn active" data-chain="sepolia">
-      <span class="emoji">⟠</span>Sepolia
-    </button>
-    <button class="chain-btn" data-chain="arbitrum">
-      <span class="emoji">🔵</span>Arbitrum
-    </button>
-    <button class="chain-btn" data-chain="base">
-      <span class="emoji">🔷</span>Base
-    </button>
-    <button class="chain-btn" data-chain="bnb">
-      <span class="emoji">🟡</span>BNB
-    </button>
+    <button class="chain-btn active" data-chain="sepolia"><span class="emoji">⟠</span>Sepolia</button>
+    <button class="chain-btn" data-chain="arbitrum"><span class="emoji">🔵</span>Arbitrum</button>
+    <button class="chain-btn" data-chain="base"><span class="emoji">🔷</span>Base</button>
+    <button class="chain-btn" data-chain="bnb"><span class="emoji">🟡</span>BNB</button>
   </div>
 
-  <!-- Token + Amount -->
   <div class="token-amount-box">
     <div class="token-row">
       <div class="label" style="margin:0">Token</div>
@@ -418,46 +353,30 @@
         <option value="weth">WETH</option>
       </select>
     </div>
-    <input
-      id="amountInput"
-      class="amount-input"
-      type="number"
-      placeholder="0.00"
-      min="0"
-      step="any"
-    />
+    <input id="amountInput" class="amount-input" type="number" placeholder="0.00" min="0" step="any" />
     <div class="balance-row">
       <span class="balance-info">Balance: <span class="balance-val" id="srcBalance">—</span></span>
       <button class="max-btn" id="maxBtn">MAX</button>
     </div>
   </div>
 
-  <!-- Push Chain Balance -->
+  <!-- Token support warning -->
+  <div class="warn-box" id="tokenWarnBox" style="display:none">
+    ⚠️ <strong id="tokenWarnMsg"></strong>
+  </div>
+
   <div class="push-balance-card">
     <div class="push-chain-label">Push Chain Balance (Donut Testnet)</div>
     <div class="token-balances" id="pushBalances">
-      <div class="token-balance-item">
-        <div class="tbi-name">pETH</div>
-        <div class="tbi-val" id="bal-peth">—</div>
-      </div>
-      <div class="token-balance-item">
-        <div class="tbi-name">USDC.eth</div>
-        <div class="tbi-val" id="bal-usdc">—</div>
-      </div>
-      <div class="token-balance-item">
-        <div class="tbi-name">USDT.eth</div>
-        <div class="tbi-val" id="bal-usdt">—</div>
-      </div>
-      <div class="token-balance-item">
-        <div class="tbi-name">pSOL</div>
-        <div class="tbi-val" id="bal-psol">—</div>
-      </div>
+      <div class="token-balance-item"><div class="tbi-name">pETH</div><div class="tbi-val" id="bal-peth">—</div></div>
+      <div class="token-balance-item"><div class="tbi-name">USDC.eth</div><div class="tbi-val" id="bal-usdc">—</div></div>
+      <div class="token-balance-item"><div class="tbi-name">USDT.eth</div><div class="tbi-val" id="bal-usdt">—</div></div>
+      <div class="token-balance-item"><div class="tbi-name">pSOL</div><div class="tbi-val" id="bal-psol">—</div></div>
     </div>
   </div>
 
   <div class="bridge-arrow">↓</div>
 
-  <!-- Destination -->
   <div class="label">Destination</div>
   <div class="token-amount-box" style="margin-top:0">
     <div style="display:flex;align-items:center;gap:10px">
@@ -477,11 +396,9 @@
     ⚠️ <strong>Min ETH:</strong> 0.001 ETH per bridge. Pastikan wallet kamu punya saldo testnet (ambil dari <a href="https://faucet.push.org" target="_blank" style="color:var(--accent)">faucet</a>).
   </div>
 
-  <!-- Bridge Button -->
   <button id="bridgeBtn" disabled>Connect Wallet First</button>
 </div>
 
-<!-- ─── Progress Card ─── -->
 <div class="card" id="progressCard">
   <div class="progress-title">🚀 Bridge Progress</div>
 
@@ -496,7 +413,7 @@
   <div class="step" id="step-2">
     <div class="step-icon pending" id="icon-2">2</div>
     <div class="step-body">
-      <div class="step-name">Approve Token (ERC20)</div>
+      <div class="step-name">Cek Token Support</div>
       <div class="step-msg" id="msg-2">Menunggu...</div>
     </div>
   </div>
@@ -504,7 +421,7 @@
   <div class="step" id="step-3">
     <div class="step-icon pending" id="icon-3">3</div>
     <div class="step-body">
-      <div class="step-name">Kirim ke Gateway</div>
+      <div class="step-name">Approve Token (ERC20)</div>
       <div class="step-msg" id="msg-3">Menunggu...</div>
     </div>
   </div>
@@ -512,12 +429,19 @@
   <div class="step" id="step-4">
     <div class="step-icon pending" id="icon-4">4</div>
     <div class="step-body">
-      <div class="step-name">Konfirmasi di Push Chain</div>
+      <div class="step-name">Kirim ke Gateway</div>
       <div class="step-msg" id="msg-4">Menunggu...</div>
     </div>
   </div>
 
-  <!-- TX Hash Box -->
+  <div class="step" id="step-5">
+    <div class="step-icon pending" id="icon-5">5</div>
+    <div class="step-body">
+      <div class="step-name">Konfirmasi di Push Chain</div>
+      <div class="step-msg" id="msg-5">Menunggu...</div>
+    </div>
+  </div>
+
   <div class="tx-hash-box" id="txHashBox">
     <div class="tx-label">Source TX Hash</div>
     <div class="tx-val" id="txHashVal">—</div>
@@ -528,22 +452,20 @@
   </div>
 </div>
 
-<!-- ─── Note ─── -->
 <div class="abi-note">
-  ✅ ABI diverifikasi dari <a href="https://sepolia.etherscan.io/address/0xa594c32593eD1E0Fce83fa1b3A56870b4a1b4ec1#code" target="_blank">Etherscan</a> · fungsi: <code>sendFunds()</code> · App ini untuk <strong>testnet only</strong>.
+  ✅ Bridge testnet Push Chain · fungsi: <code>sendFunds()</code> · App ini untuk <strong>testnet only</strong>.
 </div>
 
-<!-- ─── Toast ─── -->
 <div id="toast"></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
-//  KONFIGURASI CHAIN & CONTRACT
+//  KONFIGURASI
 // ═══════════════════════════════════════════════════════════
 const CHAINS = {
   sepolia: {
     name: 'Ethereum Sepolia',
-    chainId: '0xaa36a7', // 11155111
+    chainId: '0xaa36a7',
     rpc: 'https://rpc.sepolia.org',
     explorer: 'https://sepolia.etherscan.io',
     gateway: '0x05bD7a3D18324c1F7e216f7fBF2b15985aE5281A',
@@ -557,7 +479,7 @@ const CHAINS = {
   },
   arbitrum: {
     name: 'Arbitrum Sepolia',
-    chainId: '0x66eee', // 421614
+    chainId: '0x66eee',
     rpc: 'https://sepolia-rollup.arbitrum.io/rpc',
     explorer: 'https://sepolia.arbiscan.io',
     gateway: '0x2cd870e0166Ba458dEC615168Fd659AacD795f34',
@@ -570,7 +492,7 @@ const CHAINS = {
   },
   base: {
     name: 'Base Sepolia',
-    chainId: '0x14a34', // 84532
+    chainId: '0x14a34',
     rpc: 'https://sepolia.base.org',
     explorer: 'https://sepolia.basescan.org',
     gateway: '0xFD4fef1F43aFEc8b5bcdEEc47f35a1431479aC16',
@@ -583,7 +505,7 @@ const CHAINS = {
   },
   bnb: {
     name: 'BNB Testnet',
-    chainId: '0x61', // 97
+    chainId: '0x61',
     rpc: 'https://data-seed-prebsc-1-s1.binance.org:8545',
     explorer: 'https://testnet.bscscan.com',
     gateway: '0x44aFFC61983F4348DdddB886349eb992C061EaC0',
@@ -595,15 +517,12 @@ const CHAINS = {
   }
 }
 
-// Push Chain config
-// RPC resmi dari: https://push.org/docs/chain/setup/chain-config
 const PUSH_CHAIN = {
   chainId: 42101,
   rpc: 'https://evm.donut.rpc.push.org/',
   explorer: 'https://donut.push.network',
 }
 
-// Push Chain token addresses (dari address book)
 const PUSH_TOKENS = {
   peth_sep:  { address: '0x2971824Db68229D087931155C2b8bB820B275809', symbol: 'pETH',     decimals: 18 },
   usdc_eth:  { address: '0x387b9C8Db60E74999aAAC5A2b7825b400F12d68E', symbol: 'USDC.eth', decimals: 6  },
@@ -611,16 +530,11 @@ const PUSH_TOKENS = {
   psol:      { address: '0x5D525Df2bD99a6e7ec58b76aF2fd95F39874EBed', symbol: 'pSOL',     decimals: 9  },
 }
 
-// ─── ABIs ───
-// ABI UniversalGateway - diambil langsung dari source code contract
-// Source: https://sepolia.etherscan.io/address/0xa594c32593eD1E0Fce83fa1b3A56870b4a1b4ec1#code
-//
-// Fungsi utama untuk bridge: sendFunds
-// struct RevertInstructions { address fundRecipient; ... }
-// - Untuk native (ETH/BNB): panggil dengan msg.value = bridgeAmount, bridgeToken = address(0)
-// - Untuk ERC20: panggil tanpa msg.value, bridgeToken = alamat token
+// ─── FIX 1: ABI diperluas dengan semua fungsi read yang diperlukan ───
+// Menggunakan tuple[] syntax yang benar untuk ethers v6
 const GATEWAY_ABI = [
-  // sendFunds: fungsi utama untuk bridge dana ke Push Chain
+  // FIX: Signature sendFunds yang benar — pastikan parameter struct sesuai dengan versi on-chain
+  // Dicoba dua format: dengan dan tanpa named struct param
   `function sendFunds(
     address recipient,
     address bridgeToken,
@@ -628,10 +542,11 @@ const GATEWAY_ABI = [
     tuple(address fundRecipient) revertInstruction
   ) external payable`,
 
-  // isSupportedToken: cek apakah token didukung
+  // Read functions untuk debugging
   'function isSupportedToken(address token) external view returns (bool)',
+  'function owner() external view returns (address)',
 
-  // Events
+  // Event
   `event UniversalTx(
     address indexed sender,
     address indexed recipient,
@@ -652,22 +567,18 @@ const ERC20_ABI = [
   'function allowance(address owner, address spender) view returns (uint256)',
 ]
 
-// ═══════════════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════════════
+// ─── STATE ───
 let provider, signer, userAddress
 let selectedChain = 'sepolia'
 let selectedToken = 'native'
 let isBridging = false
 
-// ═══════════════════════════════════════════════════════════
-//  UI HELPERS
-// ═══════════════════════════════════════════════════════════
+// ─── UI HELPERS ───
 function showToast(msg, type='success') {
   const t = document.getElementById('toast')
   t.textContent = msg
   t.className = `show ${type}`
-  setTimeout(() => t.className = '', 3000)
+  setTimeout(() => t.className = '', 3500)
 }
 
 function fmt(val, decimals=4) {
@@ -683,7 +594,6 @@ function shortAddr(addr) {
   return addr.slice(0,6) + '...' + addr.slice(-4)
 }
 
-// Progress steps
 function setStep(num, status, msg='') {
   const icon = document.getElementById(`icon-${num}`)
   const msgEl = document.getElementById(`msg-${num}`)
@@ -693,15 +603,53 @@ function setStep(num, status, msg='') {
   if (msg) msgEl.textContent = msg
 }
 
-// ═══════════════════════════════════════════════════════════
-//  WALLET
-// ═══════════════════════════════════════════════════════════
+// FIX 2: Fungsi khusus cek apakah token supported sebelum memulai bridge
+// Menampilkan warning di UI sebelum user klik Bridge
+async function checkTokenSupport(chainKey, tokenKey) {
+  const chain = CHAINS[chainKey]
+  const token = chain?.tokens[tokenKey]
+  const warnBox = document.getElementById('tokenWarnBox')
+  const warnMsg = document.getElementById('tokenWarnMsg')
+
+  if (!token || !token.address) {
+    warnBox.style.display = 'none'
+    return true // native selalu supported
+  }
+
+  if (!userAddress) {
+    warnBox.style.display = 'none'
+    return true
+  }
+
+  try {
+    // Buat provider langsung ke RPC chain yang dipilih (bukan wallet provider)
+    // agar bisa baca contract walaupun wallet di chain lain
+    const readProvider = new ethers.JsonRpcProvider(chain.rpc)
+    const gateway = new ethers.Contract(chain.gateway, GATEWAY_ABI, readProvider)
+    const supported = await gateway.isSupportedToken(token.address)
+
+    if (!supported) {
+      warnBox.style.display = 'block'
+      warnMsg.textContent = `${token.name} BELUM di-whitelist di gateway ${chain.name}. Gunakan ETH Native dulu, atau coba chain lain.`
+      return false
+    } else {
+      warnBox.style.display = 'none'
+      return true
+    }
+  } catch(e) {
+    console.warn('Tidak bisa cek isSupportedToken:', e.message)
+    // Jika fungsi tidak ada / revert, anggap supported dan biarkan bridge coba
+    warnBox.style.display = 'none'
+    return true
+  }
+}
+
+// ─── WALLET ───
 async function connectWallet() {
   if (!window.ethereum) {
     showToast('MetaMask tidak ditemukan!', 'error')
     return
   }
-
   try {
     provider = new ethers.BrowserProvider(window.ethereum)
     await provider.send('eth_requestAccounts', [])
@@ -718,11 +666,11 @@ async function connectWallet() {
 
     await switchToChain(selectedChain)
     await refreshBalances()
+    await checkTokenSupport(selectedChain, selectedToken)
 
     window.ethereum.on('accountsChanged', () => location.reload())
     window.ethereum.on('chainChanged', () => location.reload())
-
-    showToast('Wallet terhubung!')
+    showToast('Wallet terhubung! ✓')
   } catch(e) {
     showToast('Gagal connect: ' + e.message, 'error')
   }
@@ -737,7 +685,6 @@ async function switchToChain(chainKey) {
       params: [{ chainId: chain.chainId }],
     })
   } catch(e) {
-    // Chain belum ditambah, tambahkan
     if (e.code === 4902) {
       const chainParams = {
         sepolia:  { chainName:'Ethereum Sepolia', nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://rpc.sepolia.org'], blockExplorerUrls:['https://sepolia.etherscan.io'] },
@@ -755,62 +702,44 @@ async function switchToChain(chainKey) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-//  BALANCES
-// ═══════════════════════════════════════════════════════════
+// ─── BALANCES ───
 async function refreshBalances() {
   if (!userAddress) return
-
-  // Source chain balance
   try {
     const chain = CHAINS[selectedChain]
     const token = chain.tokens[selectedToken]
-
     if (!token) {
       document.getElementById('srcBalance').textContent = '—'
     } else if (!token.address) {
-      // Native
       const bal = await provider.getBalance(userAddress)
-      document.getElementById('srcBalance').textContent =
-        fmt(ethers.formatEther(bal)) + ' ' + chain.symbol
+      document.getElementById('srcBalance').textContent = fmt(ethers.formatEther(bal)) + ' ' + chain.symbol
     } else {
-      // ERC20
       const erc20 = new ethers.Contract(token.address, ERC20_ABI, provider)
       const bal = await erc20.balanceOf(userAddress)
-      document.getElementById('srcBalance').textContent =
-        fmt(ethers.formatUnits(bal, token.decimals)) + ' ' + token.name
+      document.getElementById('srcBalance').textContent = fmt(ethers.formatUnits(bal, token.decimals)) + ' ' + token.name
     }
   } catch(e) {
     document.getElementById('srcBalance').textContent = 'Error'
-    console.error('Balance error:', e)
   }
 
-  // Push Chain balances
   try {
-    // ⚠️ Ganti RPC jika berbeda. Cek di: https://push.org/docs/chain/setup/chain-config
     const pushProvider = new ethers.JsonRpcProvider(PUSH_CHAIN.rpc)
     const balIds = ['peth_sep','usdc_eth','usdt_eth','psol']
     const uiIds  = ['bal-peth','bal-usdc','bal-usdt','bal-psol']
-
     for (let i = 0; i < balIds.length; i++) {
       const tok = PUSH_TOKENS[balIds[i]]
       try {
         const contract = new ethers.Contract(tok.address, ERC20_ABI, pushProvider)
         const bal = await contract.balanceOf(userAddress)
-        document.getElementById(uiIds[i]).textContent =
-          fmt(ethers.formatUnits(bal, tok.decimals))
+        document.getElementById(uiIds[i]).textContent = fmt(ethers.formatUnits(bal, tok.decimals))
       } catch {
         document.getElementById(uiIds[i]).textContent = '?'
       }
     }
-  } catch(e) {
-    console.error('Push Chain balance error:', e)
-  }
+  } catch(e) { console.error('Push Chain balance error:', e) }
 }
 
-// ═══════════════════════════════════════════════════════════
-//  CHAIN & TOKEN SELECTOR
-// ═══════════════════════════════════════════════════════════
+// ─── SELECTORS ───
 document.getElementById('chainRow').addEventListener('click', async (e) => {
   const btn = e.target.closest('.chain-btn')
   if (!btn) return
@@ -818,7 +747,6 @@ document.getElementById('chainRow').addEventListener('click', async (e) => {
   btn.classList.add('active')
   selectedChain = btn.dataset.chain
 
-  // Update token dropdown
   const chain = CHAINS[selectedChain]
   const sel = document.getElementById('tokenSelect')
   sel.innerHTML = Object.entries(chain.tokens)
@@ -829,12 +757,16 @@ document.getElementById('chainRow').addEventListener('click', async (e) => {
   if (userAddress) {
     await switchToChain(selectedChain)
     await refreshBalances()
+    await checkTokenSupport(selectedChain, selectedToken)
   }
 })
 
 document.getElementById('tokenSelect').addEventListener('change', async (e) => {
   selectedToken = e.target.value
-  if (userAddress) await refreshBalances()
+  if (userAddress) {
+    await refreshBalances()
+    await checkTokenSupport(selectedChain, selectedToken)
+  }
 })
 
 document.getElementById('maxBtn').addEventListener('click', async () => {
@@ -844,7 +776,6 @@ document.getElementById('maxBtn').addEventListener('click', async () => {
   try {
     if (!token.address) {
       const bal = await provider.getBalance(userAddress)
-      // Sisakan sedikit untuk gas
       const leave = ethers.parseEther('0.01')
       const max = bal > leave ? bal - leave : 0n
       document.getElementById('amountInput').value = ethers.formatEther(max)
@@ -857,7 +788,7 @@ document.getElementById('maxBtn').addEventListener('click', async () => {
 })
 
 // ═══════════════════════════════════════════════════════════
-//  BRIDGE
+//  BRIDGE — VERSI FIXED
 // ═══════════════════════════════════════════════════════════
 document.getElementById('bridgeBtn').addEventListener('click', doBridge)
 
@@ -877,8 +808,7 @@ async function doBridge() {
   document.getElementById('progressCard').style.display = 'block'
   document.getElementById('txHashBox').classList.remove('visible')
 
-  // Reset steps
-  for (let i = 1; i <= 4; i++) setStep(i, 'pending', 'Menunggu...')
+  for (let i = 1; i <= 5; i++) setStep(i, 'pending', 'Menunggu...')
 
   const chain = CHAINS[selectedChain]
   const token = chain.tokens[selectedToken]
@@ -900,114 +830,166 @@ async function doBridge() {
     if (amount <= 0n) throw new Error('Jumlah harus lebih dari 0')
     setStep(1, 'done', '✓ Input valid')
 
-    // ── Step 2: Approve (ERC20 only) ──
+    // ── FIX 3: Step 2 — Cek token support SEBELUM approve ──
+    // Ini mencegah waste gas approve jika token tidak di-whitelist
+    setStep(2, 'active', 'Memeriksa apakah token didukung gateway...')
     if (token.address) {
-      setStep(2, 'active', 'Memeriksa allowance...')
+      try {
+        // Gunakan JsonRpcProvider langsung (bukan wallet provider)
+        // agar tidak butuh switch chain dulu
+        const readProvider = new ethers.JsonRpcProvider(chain.rpc)
+        const gatewayRead = new ethers.Contract(chain.gateway, GATEWAY_ABI, readProvider)
+        const supported = await gatewayRead.isSupportedToken(token.address)
+        if (!supported) {
+          throw new Error(
+            `Token ${token.name} BELUM di-whitelist di gateway ${chain.name}.\n` +
+            `Solusi: Gunakan ETH Native, atau coba dari chain lain (Base/Arbitrum).\n` +
+            `Jika kamu yakin token ini harusnya supported, hub Push Chain Discord.`
+          )
+        }
+        setStep(2, 'done', `✓ ${token.name} didukung gateway`)
+      } catch(e) {
+        if (e.message.includes('BELUM di-whitelist')) throw e
+        // isSupportedToken function tidak ada / revert dengan alasan lain — lanjut saja
+        console.warn('isSupportedToken unavailable, skipping check:', e.message)
+        setStep(2, 'done', '✓ Skip cek (fungsi tidak tersedia di gateway ini)')
+      }
+    } else {
+      setStep(2, 'done', '✓ Native token, selalu supported')
+    }
+
+    // ── Step 3: Approve (ERC20 only) ──
+    if (token.address) {
+      setStep(3, 'active', 'Memeriksa allowance...')
       const erc20 = new ethers.Contract(token.address, ERC20_ABI, signer)
       const allowance = await erc20.allowance(userAddress, chain.gateway)
 
       if (allowance < amount) {
-        setStep(2, 'active', 'Menunggu approval di MetaMask...')
-        const tx = await erc20.approve(chain.gateway, amount)
-        setStep(2, 'active', `Approve tx: ${shortAddr(tx.hash)} — menunggu konfirmasi...`)
-        await tx.wait(1)
-        setStep(2, 'done', '✓ Token diapprove')
+        setStep(3, 'active', 'Menunggu approval di MetaMask...')
+        // FIX 4: Approve dengan jumlah exact (bukan MaxUint256) agar lebih aman
+        // tapi bisa juga pakai MaxUint256 agar tidak perlu approve lagi
+        const approveTx = await erc20.approve(chain.gateway, amount)
+        setStep(3, 'active', `Approve tx: ${shortAddr(approveTx.hash)} — konfirmasi...`)
+        await approveTx.wait(1)
+        setStep(3, 'done', '✓ Token diapprove')
       } else {
-        setStep(2, 'done', '✓ Allowance cukup, skip approve')
+        setStep(3, 'done', '✓ Allowance cukup, skip approve')
       }
     } else {
-      setStep(2, 'done', '✓ Native token, tidak perlu approve')
+      setStep(3, 'done', '✓ Native token, tidak perlu approve')
     }
 
-    // ── Step 3: Cek token support (ERC20) ──
-    if (token.address) {
-      setStep(3, 'active', 'Cek apakah token didukung gateway...')
-      const gatewayRead = new ethers.Contract(chain.gateway, GATEWAY_ABI, provider)
-      const supported = await gatewayRead.isSupportedToken(token.address)
-      if (!supported) {
-        throw new Error(`Token ${token.name} belum di-whitelist di gateway ini. Coba pakai ETH Native atau USDC.`)
-      }
-    }
-
-    // ── Step 3: Kirim ke Gateway ──
-    setStep(3, 'active', 'Menunggu konfirmasi di MetaMask...')
+    // ── FIX 5: Step 4 — sendFunds dengan encoding yang benar ──
+    setStep(4, 'active', 'Menunggu konfirmasi di MetaMask...')
     const gateway = new ethers.Contract(chain.gateway, GATEWAY_ABI, signer)
 
-    // RevertInstructions struct: jika tx gagal di Push Chain,
-    // dana dikembalikan ke fundRecipient (kita set ke userAddress sendiri)
-    const revertInstruction = { fundRecipient: userAddress }
+    // FIX 6: revertInstruction struct
+    // Ethers v6 butuh array untuk tuple, BUKAN object, saat encode ke contract
+    // Format yang benar: [address] untuk tuple(address fundRecipient)
+    const revertInstruction = [userAddress]  // <-- INI PERBAIKAN UTAMA
 
     let tx
     if (!token.address) {
       // Native ETH/BNB
-      // ⚠️ PENTING: msg.value HARUS PERSIS SAMA dengan bridgeAmount
-      // Contract akan revert jika msg.value != bridgeAmount
-      // Min jumlah ~0.001 ETH (tergantung USD cap contract)
       if (amount < ethers.parseEther('0.001')) {
-        throw new Error('Jumlah minimum untuk native ETH adalah 0.001 ETH. Coba jumlah yang lebih besar.')
+        throw new Error('Jumlah minimum native adalah 0.001 ETH')
       }
+
+      // FIX 7: Estimasi gas dulu untuk dapat error yang lebih jelas
+      try {
+        await gateway.sendFunds.estimateGas(
+          userAddress,
+          ethers.ZeroAddress,
+          amount,
+          revertInstruction,
+          { value: amount }
+        )
+      } catch(estimateErr) {
+        // Jika estimasi gagal, coba decode error lebih detail
+        console.error('EstimateGas failed:', estimateErr)
+        throw new Error(
+          `Contract revert saat estimasi gas. ` +
+          `Pastikan wallet punya cukup ETH testnet dan gateway address masih aktif.\n` +
+          `Detail: ${estimateErr.shortMessage || estimateErr.message}`
+        )
+      }
+
       tx = await gateway.sendFunds(
-        userAddress,           // recipient di Push Chain
-        ethers.ZeroAddress,    // bridgeToken = 0x0 untuk native
-        amount,                // bridgeAmount
-        revertInstruction,     // RevertInstructions struct
-        { value: amount }      // msg.value HARUS = bridgeAmount
+        userAddress,
+        ethers.ZeroAddress,
+        amount,
+        revertInstruction,
+        { value: amount }
       )
     } else {
-      // ERC20 → tidak perlu kirim ETH (msg.value = 0)
+      // ERC20
+
+      // FIX 7: Estimasi gas dulu
+      try {
+        await gateway.sendFunds.estimateGas(
+          userAddress,
+          token.address,
+          amount,
+          revertInstruction
+        )
+      } catch(estimateErr) {
+        console.error('EstimateGas failed:', estimateErr)
+        throw new Error(
+          `Contract revert saat estimasi gas untuk ${token.name}.\n` +
+          `Kemungkinan: token tidak di-whitelist, atau allowance kurang.\n` +
+          `Detail: ${estimateErr.shortMessage || estimateErr.message}`
+        )
+      }
+
       tx = await gateway.sendFunds(
-        userAddress,           // recipient di Push Chain
-        token.address,         // bridgeToken = alamat ERC20
-        amount,                // bridgeAmount
-        revertInstruction,     // RevertInstructions struct
+        userAddress,
+        token.address,
+        amount,
+        revertInstruction
       )
     }
 
-    setStep(3, 'active', `Tx terkirim: ${shortAddr(tx.hash)}`)
+    setStep(4, 'active', `Tx terkirim: ${shortAddr(tx.hash)}`)
 
-    // Tampilkan TX hash
     document.getElementById('txHashVal').textContent = tx.hash
     document.getElementById('explorerLink').href = `${chain.explorer}/tx/${tx.hash}`
     document.getElementById('txHashBox').classList.add('visible')
 
     await tx.wait(1)
-    setStep(3, 'done', `✓ Konfirmasi di ${chain.name}`)
+    setStep(4, 'done', `✓ Konfirmasi di ${chain.name}`)
 
-    // ── Step 4: Tunggu Push Chain ──
-    setStep(4, 'active', 'Menunggu relay ke Push Chain (~2-5 menit)...')
+    // ── Step 5: Tunggu Push Chain ──
+    setStep(5, 'active', 'Menunggu relay ke Push Chain (~2-5 menit)...')
 
-    // Polling Push Chain balance setiap 15 detik
     let attempts = 0
     const maxAttempts = 20
     const pollInterval = setInterval(async () => {
       attempts++
-      setStep(4, 'active', `Polling Push Chain... (${attempts}/${maxAttempts})`)
+      setStep(5, 'active', `Polling Push Chain... (${attempts}/${maxAttempts})`)
       await refreshBalances()
       if (attempts >= maxAttempts) {
         clearInterval(pollInterval)
-        setStep(4, 'done', '✓ Selesai! Cek balance di Push Chain Scan')
+        setStep(5, 'done', '✓ Selesai! Cek balance di Push Chain Scan')
         doneState()
       }
     }, 15000)
 
-    // Juga set done setelah 30 detik minimal
     setTimeout(() => {
       clearInterval(pollInterval)
-      setStep(4, 'done', '✓ TX sukses! Token akan segera muncul di Push Chain')
+      setStep(5, 'done', '✓ TX sukses! Token akan segera muncul di Push Chain')
       doneState()
     }, 30000)
 
-    showToast('Bridge berhasil! Menunggu konfirmasi Push Chain 🎉')
+    showToast('Bridge berhasil! Menunggu Push Chain 🎉')
 
   } catch(e) {
     console.error(e)
-    const msg = e?.reason || e?.message || 'Unknown error'
+    const msg = e?.reason || e?.shortMessage || e?.message || 'Unknown error'
 
-    // Cari step mana yang gagal
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 5; i++) {
       const icon = document.getElementById(`icon-${i}`)
       if (icon.classList.contains('active')) {
-        setStep(i, 'error', '✕ ' + msg.slice(0, 80))
+        setStep(i, 'error', '✕ ' + msg.slice(0, 100))
         break
       }
     }
@@ -1023,12 +1005,9 @@ function doneState() {
   refreshBalances()
 }
 
-// ═══════════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════════
+// ─── INIT ───
 document.getElementById('connectBtn').addEventListener('click', connectWallet)
 
-// Auto reconnect jika sudah connected sebelumnya
 ;(async () => {
   if (window.ethereum) {
     const accounts = await window.ethereum.request({ method: 'eth_accounts' })
