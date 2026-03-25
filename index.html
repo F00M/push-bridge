@@ -236,127 +236,48 @@ const ERC20_ABI = [
 ]
 
 // ═══════════════════════════════════════════════════════════
-//  PAYLOAD BUILDER
-//  Dibangun berdasarkan reverse-engineering dari tx USDT yang sukses
-//  di Etherscan Sepolia
+//  CALLDATA BUILDER — berdasarkan TX USDC sukses di Etherscan
+//  https://sepolia.etherscan.io/tx/0xeb5ce4fa943adfddaf8ef72c21fbfad55c9a38abfc2efaf36eaa0d66f07573e9
+//
+//  Function: sendFunds(address recipient, address bridgeToken, uint256 bridgeAmount, tuple revertCFG)
+//  Selector: 0x65f4dbe1
+//
+//  PENTING:
+//  - recipient = Push Chain address user (bukan zero address!)
+//  - Tidak ada payload field
+//  - revertCFG = tuple(address fundRecipient, bytes revertMsg)
 // ═══════════════════════════════════════════════════════════
 
 /**
- * Encode inner cross-chain call payload.
+ * Build calldata untuk sendFunds() — berdasarkan TX sukses di Etherscan Sepolia.
  * 
- * Dari tx USDT yang sukses, payload berisi:
- * - Beberapa field numerik (fees, nonce, limits)
- * - Inner call: selector 0x2cc2842d + abi.encoded Call[] array
- *   dimana Call = { target: pushChainTokenAddress, value: 0, callData: transfer(recipient, amount) }
+ * Selector: 0x65f4dbe1
+ * sendFunds(address recipient, address bridgeToken, uint256 bridgeAmount, tuple(address fundRecipient, bytes revertMsg) revertCFG)
  * 
- * Ini adalah format yang dipakai gateway untuk instruksikan Push Chain
- * apa yang harus dilakukan setelah menerima token.
+ * recipient = Push Chain address user (sama dengan src address, bukan zero address)
  */
-function buildPayload(pushChainTokenAddress, recipientAddress, amount) {
+function buildSendFundsCalldata(tokenAddress, amount, userAddress) {
   const abiCoder = ethers.AbiCoder.defaultAbiCoder()
 
-  // Inner calldata: transfer(recipient, amount)
-  // transfer(address,uint256) selector = 0xa9059cbb
-  const transferSelector = '0xa9059cbb'
-  const transferCalldata = transferSelector + abiCoder.encode(
-    ['address', 'uint256'],
-    [recipientAddress, amount]
-  ).slice(2) // hapus 0x prefix
-
-  // Encode Call struct array: [{ target, value, callData }]
-  // selector 0x2cc2842d diikuti abi.encode(Call[])
-  const innerCallEncoded = abiCoder.encode(
-    ['tuple(address target, uint256 value, bytes callData)[]'],
-    [[{
-      target: pushChainTokenAddress,
-      value: 0n,
-      callData: transferCalldata
-    }]]
-  )
-
-  const innerCall = '0x2cc2842d' + innerCallEncoded.slice(2)
-
-  // Outer payload structure (dari analisis tx USDT):
-  // [0] uint256: 0 (field kosong/reserved)
-  // [1] uint256: 0 (field kosong/reserved)  
-  // [2] uint256: offset ke inner data = 0x120 (288)
-  // [3] uint256: 0x989680 (10,000,000 - mungkin min fee atau nonce)
-  // [4] uint256: 0x2540be400 (10,000,000,000 - mungkin max fee)
-  // [5] uint256: 0 
-  // [6] uint256: 5 (mungkin confirmation blocks atau chain ID related)
-  // [7] uint256: 0x2540be3ff (max fee - 1)
-  // [8] uint256: 1 (jumlah inner calls)
-  // [9] uint256: 0x144 = 324 (length of inner call bytes)
-  // [10+] bytes: inner call data
-  //
-  // CATATAN: Field 0-1 dan 5 adalah zero padding
-  // Field 3,4,7 kemungkinan fee parameters yang di-set gateway
-  // Kita mirror exact values dari USDT tx yang sukses
-
-  const innerCallBytes = ethers.getBytes(innerCall)
-  const innerCallLen = BigInt(innerCallBytes.length)
-
-  // Encode outer payload
-  const outerPayload = abiCoder.encode(
-    ['uint256','uint256','uint256','uint256','uint256','uint256','uint256','uint256','uint256','uint256','bytes'],
-    [
-      0n,           // [0] reserved
-      0n,           // [1] reserved
-      288n,         // [2] offset to dynamic data (9 * 32 = 288)
-      10000000n,    // [3] 0x989680 - fee param dari tx sukses
-      10000000000n, // [4] 0x2540be400 - fee param dari tx sukses
-      0n,           // [5] reserved
-      5n,           // [6] nilai dari tx sukses
-      9999999999n,  // [7] 0x2540be3ff - fee param dari tx sukses
-      1n,           // [8] jumlah calls
-      innerCallLen, // [9] length of inner call
-      innerCallBytes, // [10] inner call bytes
-    ]
-  )
-
-  return outerPayload
-}
-
-/**
- * Build complete calldata untuk sendFunds() berdasarkan struct dari tx USDT sukses.
- * 
- * Function selector: 0x5b752187
- * Struct req = {
- *   recipient: address (zero address - gateway handle routing),
- *   token: address (source chain token address),
- *   amount: uint256,
- *   payload: bytes (cross-chain call instructions),
- *   revertInstruction: { fundRecipient: address, revertMsg: bytes },
- *   signatureData: bytes (kosong)
- * }
- */
-function buildSendFundsCalldata(tokenAddress, amount, payload, userAddress) {
-  const abiCoder = ethers.AbiCoder.defaultAbiCoder()
-
-  // FIX: Encode fields LANGSUNG sebagai parameter terpisah (bukan tuple wrapper)
-  // encode([tuple(...)], [val]) menambah extra 0x20 pointer di slot pertama -> revert
-  // Dari tx USDT sukses: slot[0] = recipient address langsung (tanpa 0x20 pointer)
   const encoded = abiCoder.encode(
     [
-      'address',
-      'address',
-      'uint256',
-      'bytes',
-      'tuple(address fundRecipient, bytes revertMsg)',
-      'bytes',
+      'address',                                         // recipient (Push Chain addr)
+      'address',                                         // bridgeToken
+      'uint256',                                         // bridgeAmount
+      'tuple(address fundRecipient, bytes revertMsg)',    // revertCFG
     ],
     [
-      ethers.ZeroAddress,
-      tokenAddress,
+      userAddress,                                       // recipient = user's Push Chain address
+      tokenAddress,                                      // source token address
       amount,
-      payload,
       { fundRecipient: userAddress, revertMsg: '0x' },
-      '0x',
     ]
   )
 
-  return '0x5b752187' + encoded.slice(2)
+  // Selector 0x65f4dbe1 — verified dari TX USDC sukses di Etherscan
+  return '0x65f4dbe1' + encoded.slice(2)
 }
+
 
 // ═══════════════════════════════════════════════════════════
 //  STATE
@@ -557,18 +478,12 @@ async function doBridge() {
 
     if (!token.address) {
       // === NATIVE ETH ===
-      // Untuk native: langsung pakai sendFunds(address, address(0), amount, revertInstruction)
-      // Format sendFunds lama yang mungkin masih berlaku untuk native
-      // Atau kita bisa encode sebagai struct juga dengan token = address(0)
-      const payload = '0x' // native tidak butuh payload cross-chain call
-      calldata = buildSendFundsCalldataNative(amount, userAddress)
+      // Native bridge: bridgeToken = address(0)
+      calldata = buildSendFundsCalldata(ethers.ZeroAddress, amount, userAddress)
       txValue = amount
     } else {
       // === ERC20 (USDC, USDT, WETH) ===
-      // Build cross-chain payload
-      setStep(3, 'active', 'Encode cross-chain payload...')
-      const payload = buildPayload(token.pushToken, userAddress, amount)
-      calldata = buildSendFundsCalldata(token.address, amount, payload, userAddress)
+      calldata = buildSendFundsCalldata(token.address, amount, userAddress)
     }
 
     setStep(3, 'active', 'Menunggu konfirmasi di MetaMask...')
@@ -618,29 +533,7 @@ async function doBridge() {
  * Untuk native ETH, gunakan format sendFunds yang lebih sederhana
  * Berdasarkan observasi: native mungkin pakai format berbeda
  */
-function buildSendFundsCalldataNative(amount, userAddress) {
-  const abiCoder = ethers.AbiCoder.defaultAbiCoder()
-  // Sama: encode fields langsung tanpa tuple wrapper
-  const encoded = abiCoder.encode(
-    [
-      'address',
-      'address',
-      'uint256',
-      'bytes',
-      'tuple(address fundRecipient, bytes revertMsg)',
-      'bytes',
-    ],
-    [
-      ethers.ZeroAddress,
-      ethers.ZeroAddress,
-      amount,
-      '0x',
-      { fundRecipient: userAddress, revertMsg: '0x' },
-      '0x',
-    ]
-  )
-  return '0x5b752187' + encoded.slice(2)
-}
+
 
 function doneState() {
   isBridging = false
