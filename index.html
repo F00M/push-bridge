@@ -139,8 +139,21 @@
         <div style="font-size:11px;color:var(--muted)">Donut Testnet • Chain ID: 42101</div>
       </div>
     </div>
-    <div style="margin-top:12px;font-size:11px;color:var(--muted)">
-      Recipient: <span id="recipientDisplay" style="font-family:'Space Mono',monospace;color:var(--text)">connect wallet</span>
+    <div style="margin-top:12px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">
+        Push Chain Recipient Address
+        <span style="color:var(--error)">*</span>
+        <span style="color:var(--muted);font-size:10px;"> — berbeda dari EVM address kamu!</span>
+      </div>
+      <input
+        id="pushRecipientInput"
+        placeholder="0x... (Push Chain address)"
+        style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'Space Mono',monospace;font-size:11px;outline:none;"
+        oninput="validatePushAddress(this)"
+      />
+      <div style="font-size:10px;color:var(--muted);margin-top:5px;line-height:1.5;">
+        💡 Push Chain address kamu bisa ditemukan di <a href="https://donut.push.network" target="_blank" style="color:var(--accent)">donut.push.network</a> atau Push Chain wallet app. Ini <strong>berbeda</strong> dari Sepolia address kamu.
+      </div>
     </div>
   </div>
 
@@ -256,25 +269,22 @@ const ERC20_ABI = [
  * 
  * recipient = Push Chain address user (sama dengan src address, bukan zero address)
  */
-function buildSendFundsCalldata(tokenAddress, amount, userAddress) {
+function buildSendFundsCalldata(tokenAddress, amount, pushRecipient, userAddress) {
   const abiCoder = ethers.AbiCoder.defaultAbiCoder()
-
   const encoded = abiCoder.encode(
     [
-      'address',                                         // recipient (Push Chain addr)
-      'address',                                         // bridgeToken
-      'uint256',                                         // bridgeAmount
-      'tuple(address fundRecipient, bytes revertMsg)',    // revertCFG
+      'address',
+      'address',
+      'uint256',
+      'tuple(address fundRecipient, bytes revertMsg)',
     ],
     [
-      userAddress,                                       // recipient = user's Push Chain address
-      tokenAddress,                                      // source token address
+      pushRecipient,
+      tokenAddress,
       amount,
       { fundRecipient: userAddress, revertMsg: '0x' },
     ]
   )
-
-  // Selector 0x65f4dbe1 — verified dari TX USDC sukses di Etherscan
   return '0x65f4dbe1' + encoded.slice(2)
 }
 
@@ -445,9 +455,10 @@ async function doBridge() {
     catch { throw new Error('Format jumlah tidak valid') }
     if (amount <= 0n) throw new Error('Jumlah harus > 0')
 
-    // Validasi: token ERC20 harus punya pushToken address
-    if (token.address && !token.pushToken) {
-      throw new Error(`Token ${token.name} tidak punya mapping ke Push Chain token. Gunakan ETH Native.`)
+    // Validasi Push Chain recipient address
+    const pushRecipient = document.getElementById('pushRecipientInput').value.trim()
+    if (!pushRecipient || !/^0x[0-9a-fA-F]{40}$/.test(pushRecipient)) {
+      throw new Error('Push Chain recipient address tidak valid! Isi dulu di field destinasi.')
     }
 
     setStep(1, 'done', '✓ Input valid')
@@ -479,11 +490,11 @@ async function doBridge() {
     if (!token.address) {
       // === NATIVE ETH ===
       // Native bridge: bridgeToken = address(0)
-      calldata = buildSendFundsCalldata(ethers.ZeroAddress, amount, userAddress)
+      calldata = buildSendFundsCalldata(ethers.ZeroAddress, amount, pushRecipient, userAddress)
       txValue = amount
     } else {
       // === ERC20 (USDC, USDT, WETH) ===
-      calldata = buildSendFundsCalldata(token.address, amount, userAddress)
+      calldata = buildSendFundsCalldata(token.address, amount, pushRecipient, userAddress)
     }
 
     setStep(3, 'active', 'Menunggu konfirmasi di MetaMask...')
@@ -534,6 +545,25 @@ async function doBridge() {
  * Berdasarkan observasi: native mungkin pakai format berbeda
  */
 
+
+function validatePushAddress(input) {
+  const val = input.value.trim()
+  const status = document.getElementById('pushAddrStatus')
+  if (val && !/^0x[0-9a-fA-F]{40}$/.test(val)) {
+    input.style.borderColor = 'var(--error)'
+    if (status) status.textContent = '✕ Format address tidak valid'
+  } else if (val) {
+    input.style.borderColor = 'var(--success)'
+    if (status) status.innerHTML = '✓ Push Chain address valid — siap bridge!'
+  } else {
+    input.style.borderColor = 'var(--border)'
+    if (status) status.innerHTML = '💡 Temukan di <a href="https://donut.push.network" target="_blank" style="color:var(--accent)">donut.push.network</a> atau Push Chain wallet.'
+  }
+}
+function clearPushAddr() {
+  const inp = document.getElementById('pushRecipientInput')
+  if (inp) { inp.value = ''; validatePushAddress(inp) }
+}
 
 function doneState() {
   isBridging = false
