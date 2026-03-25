@@ -333,31 +333,29 @@ function buildPayload(pushChainTokenAddress, recipientAddress, amount) {
 function buildSendFundsCalldata(tokenAddress, amount, payload, userAddress) {
   const abiCoder = ethers.AbiCoder.defaultAbiCoder()
 
-  // Encode struct req
-  const reqEncoded = abiCoder.encode(
-    [`tuple(
-      address recipient,
-      address token,
-      uint256 amount,
-      bytes payload,
-      tuple(address fundRecipient, bytes revertMsg) revertInstruction,
-      bytes signatureData
-    )`],
-    [{
-      recipient: ethers.ZeroAddress, // zero address = gateway routes ke Push Chain
-      token: tokenAddress,
-      amount: amount,
-      payload: payload,
-      revertInstruction: {
-        fundRecipient: userAddress,
-        revertMsg: '0x'
-      },
-      signatureData: '0x'
-    }]
+  // FIX: Encode fields LANGSUNG sebagai parameter terpisah (bukan tuple wrapper)
+  // encode([tuple(...)], [val]) menambah extra 0x20 pointer di slot pertama -> revert
+  // Dari tx USDT sukses: slot[0] = recipient address langsung (tanpa 0x20 pointer)
+  const encoded = abiCoder.encode(
+    [
+      'address',
+      'address',
+      'uint256',
+      'bytes',
+      'tuple(address fundRecipient, bytes revertMsg)',
+      'bytes',
+    ],
+    [
+      ethers.ZeroAddress,
+      tokenAddress,
+      amount,
+      payload,
+      { fundRecipient: userAddress, revertMsg: '0x' },
+      '0x',
+    ]
   )
 
-  // Function selector 0x5b752187 (dari tx USDT yang sukses di Etherscan)
-  return '0x5b752187' + reqEncoded.slice(2)
+  return '0x5b752187' + encoded.slice(2)
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -622,24 +620,24 @@ async function doBridge() {
  */
 function buildSendFundsCalldataNative(amount, userAddress) {
   const abiCoder = ethers.AbiCoder.defaultAbiCoder()
-  // Coba format struct yang sama tapi token = address(0) dan payload kosong
+  // Sama: encode fields langsung tanpa tuple wrapper
   const encoded = abiCoder.encode(
-    [`tuple(
-      address recipient,
-      address token,
-      uint256 amount,
-      bytes payload,
-      tuple(address fundRecipient, bytes revertMsg) revertInstruction,
-      bytes signatureData
-    )`],
-    [{
-      recipient: ethers.ZeroAddress,
-      token: ethers.ZeroAddress,   // native = zero address
-      amount: amount,
-      payload: '0x',               // payload kosong untuk native
-      revertInstruction: { fundRecipient: userAddress, revertMsg: '0x' },
-      signatureData: '0x'
-    }]
+    [
+      'address',
+      'address',
+      'uint256',
+      'bytes',
+      'tuple(address fundRecipient, bytes revertMsg)',
+      'bytes',
+    ],
+    [
+      ethers.ZeroAddress,
+      ethers.ZeroAddress,
+      amount,
+      '0x',
+      { fundRecipient: userAddress, revertMsg: '0x' },
+      '0x',
+    ]
   )
   return '0x5b752187' + encoded.slice(2)
 }
