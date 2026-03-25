@@ -326,7 +326,6 @@ async function connectWallet() {
     const btn = document.getElementById('connectBtn')
     btn.innerHTML = `<span class="dot-connected"></span>${short(userAddress)}`
     btn.classList.add('connected')
-    document.getElementById('recipientDisplay').textContent = short(userAddress)
     document.getElementById('bridgeBtn').disabled = false
     document.getElementById('bridgeBtn').textContent = 'Bridge →'
     await switchChain(selectedChain)
